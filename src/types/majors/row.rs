@@ -1,28 +1,19 @@
 use crate::*;
 use std::ops::Range;
 
+/// A marker type for row major grids.
 #[derive(Debug)]
 pub enum RowMajor {}
 
+/// ### Methods
 impl RowMajor {
-    pub fn cell(size: Size<usize>, cell: Point<usize>) -> Option<usize> {
-        if cell < size {
-            Some(Self::cell_unchecked(size, cell))
-        } else {
-            None
-        }
-    }
-
     pub fn cell_unchecked(size: Size<usize>, cell: Point<usize>) -> usize {
         cell.y * size.width + cell.x
     }
 
-    pub fn row(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
-        let (width, height) = size.into();
-        let (row, range) = index.checked((height, width))?;
-
-        if row < height {
-            Some(Self::row_unchecked(size, (row, range)))
+    pub fn cell(size: Size<usize>, cell: Point<usize>) -> Option<usize> {
+        if cell < size {
+            Some(Self::cell_unchecked(size, cell))
         } else {
             None
         }
@@ -40,5 +31,64 @@ impl RowMajor {
             start,
             end: start + range.end,
         }
+    }
+
+    pub fn row(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
+        let (width, height) = size.into();
+        let (row, range) = index.checked((height, width))?;
+
+        if row < height {
+            Some(Self::row_unchecked(size, (row, range)))
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn cell_unchecked() {
+        let size = (3, 2).into();
+
+        // It returns the correct index
+        assert_eq!(RowMajor::cell_unchecked(size, (0, 0).into()), 0);
+        assert_eq!(RowMajor::cell_unchecked(size, (1, 0).into()), 1);
+        assert_eq!(RowMajor::cell_unchecked(size, (2, 0).into()), 2);
+        assert_eq!(RowMajor::cell_unchecked(size, (0, 1).into()), 3);
+        assert_eq!(RowMajor::cell_unchecked(size, (1, 1).into()), 4);
+        assert_eq!(RowMajor::cell_unchecked(size, (2, 1).into()), 5);
+    }
+
+    #[test]
+    fn cell() {
+        let size = (3, 2).into();
+
+        // It returns None when out of bounds
+        assert_eq!(RowMajor::cell(size, (3, 1).into()), None);
+        assert_eq!(RowMajor::cell(size, (2, 2).into()), None);
+        assert_eq!(RowMajor::cell(size, (3, 2).into()), None);
+        assert_eq!(RowMajor::cell(size, (4, 3).into()), None);
+    }
+
+    #[test]
+    fn row_unchecked() {
+        let size = (3, 2).into();
+
+        // It returns the correct range
+        assert_eq!(RowMajor::row_unchecked(size, 0), 0..3);
+        assert_eq!(RowMajor::row_unchecked(size, 1), 3..6);
+    }
+
+    #[test]
+    fn row() {
+        let size = (3, 2).into();
+
+        // It returns None when out of bounds
+        assert_eq!(RowMajor::row(size, 2), None);
+        assert_eq!(RowMajor::row(size, 3), None);
     }
 }
