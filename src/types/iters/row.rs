@@ -10,15 +10,6 @@ pub struct RowHelper<'a, T: ?Sized> {
 }
 
 impl<'a, T: IGrid<'a> + ?Sized> RowHelper<'a, T> {
-    /// Returns a [`RowHelper`](crate::RowHelper) without bounds checking.
-    ///
-    /// See [`IGrid::row_unchecked`](crate::IGrid::row_unchecked) for safety.
-    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
-        let (row, range) = index.unchecked(grid.size().width);
-
-        Self { grid, row, range }
-    }
-
     /// Returns a [`RowHelper`](crate::RowHelper), or `None` if `row >= height`.
     pub fn new(grid: &'a T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
@@ -30,6 +21,15 @@ impl<'a, T: IGrid<'a> + ?Sized> RowHelper<'a, T> {
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= width);
         Some(unsafe { Self::new_unchecked(grid, (row, range)) })
+    }
+
+    /// Returns a [`RowHelper`](crate::RowHelper) without bounds checking.
+    ///
+    /// See [`IGrid::row_unchecked`](crate::IGrid::row_unchecked) for safety.
+    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
+        let (row, range) = index.unchecked(grid.size().width);
+
+        Self { grid, row, range }
     }
 }
 

@@ -5,12 +5,6 @@ pub type ColMajor1D<Cell, Collection> = Grid1D<ColMajor, Cell, Collection>;
 /// ### Methods
 /// @see [`ColMajor1D`](crate::ColMajor1D).
 impl<Cell, Collection: AsRef<[Cell]>> ColMajor1D<Cell, Collection> {
-    pub unsafe fn get_col_unchecked(&self, index: impl Index1D) -> &[Cell] {
-        self.cells
-            .as_ref()
-            .get_unchecked(ColMajor::col_unchecked(self.size, index))
-    }
-
     pub fn get_col(&self, index: impl Index1D) -> Option<&[Cell]> {
         let range = ColMajor::col(self.size, index)?;
         let cells = self.cells.as_ref();
@@ -20,6 +14,12 @@ impl<Cell, Collection: AsRef<[Cell]>> ColMajor1D<Cell, Collection> {
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= self.size.width * self.size.height);
         Some(unsafe { cells.get_unchecked(range) })
+    }
+
+    pub unsafe fn get_col_unchecked(&self, index: impl Index1D) -> &[Cell] {
+        self.cells
+            .as_ref()
+            .get_unchecked(ColMajor::col_unchecked(self.size, index))
     }
 }
 
@@ -41,20 +41,20 @@ impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> IGrid<'a> for ColMajor1D<Cell
             .get_unchecked(RowMajor::cell_unchecked(self.size, point))
     }
 
-    unsafe fn row_unchecked(&'a self, index: impl Index1D) -> Self::Row {
-        RowHelper::new_unchecked(self, index)
-    }
-
     unsafe fn col_unchecked(&'a self, index: impl Index1D) -> Self::Col {
         self.get_col_unchecked(index).iter()
     }
 
-    unsafe fn rows_unchecked(&'a self, index: impl Index2D) -> Self::Rows {
-        RowsHelper::new_unchecked(self, index)
+    unsafe fn row_unchecked(&'a self, index: impl Index1D) -> Self::Row {
+        RowHelper::new_unchecked(self, index)
     }
 
     unsafe fn cols_unchecked(&'a self, index: impl Index2D) -> Self::Cols {
         ColsHelper::new_unchecked(self, index)
+    }
+
+    unsafe fn rows_unchecked(&'a self, index: impl Index2D) -> Self::Rows {
+        RowsHelper::new_unchecked(self, index)
     }
 
     unsafe fn cells_unchecked(&'a self, index: impl Index2D) -> Self::Cells {

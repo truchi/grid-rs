@@ -2,28 +2,14 @@ use std::ops::{Bound::*, Range, RangeBounds};
 
 /// Converts `T: RangeBounds<usize>` to `Range<usize>`.
 pub trait ToRange {
-    /// Converts to `Range` without bounds checking.
-    fn unchecked(self, len: usize) -> Range<usize>;
-
     /// Converts to `Range` with bounds checking.
     fn checked(self, len: usize) -> Option<Range<usize>>;
+
+    /// Converts to `Range` without bounds checking.
+    fn unchecked(self, len: usize) -> Range<usize>;
 }
 
 impl<T: RangeBounds<usize>> ToRange for T {
-    fn unchecked(self, len: usize) -> Range<usize> {
-        match (self.start_bound(), self.end_bound()) {
-            (Included(start), Excluded(end)) => *start..*end,
-            (Included(start), Included(end)) => *start..end + 1,
-            (Included(start), Unbounded) => *start..len,
-            (Unbounded, Excluded(end)) => 0..*end,
-            (Unbounded, Included(end)) => 0..end + 1,
-            (Unbounded, Unbounded) => 0..len,
-            (Excluded(start), Excluded(end)) => start + 1..*end,
-            (Excluded(start), Included(end)) => start + 1..end + 1,
-            (Excluded(start), Unbounded) => start + 1..len,
-        }
-    }
-
     fn checked(self, len: usize) -> Option<Range<usize>> {
         let Range { start, end } = match (self.start_bound(), self.end_bound()) {
             (Included(start), Excluded(end)) => *start..*end,
@@ -43,6 +29,20 @@ impl<T: RangeBounds<usize>> ToRange for T {
             None
         }
     }
+
+    fn unchecked(self, len: usize) -> Range<usize> {
+        match (self.start_bound(), self.end_bound()) {
+            (Included(start), Excluded(end)) => *start..*end,
+            (Included(start), Included(end)) => *start..end + 1,
+            (Included(start), Unbounded) => *start..len,
+            (Unbounded, Excluded(end)) => 0..*end,
+            (Unbounded, Included(end)) => 0..end + 1,
+            (Unbounded, Unbounded) => 0..len,
+            (Excluded(start), Excluded(end)) => start + 1..*end,
+            (Excluded(start), Included(end)) => start + 1..end + 1,
+            (Excluded(start), Unbounded) => start + 1..len,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -50,24 +50,6 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
     use std::ops::Bound;
-
-    #[test]
-    fn unchecked() {
-        fn range(a: Bound<usize>, b: Bound<usize>) -> (Bound<usize>, Bound<usize>) {
-            (a, b)
-        }
-
-        // It converts to Range without bounds checking
-        assert_eq!(range(Unbounded, Unbounded).unchecked(10), 0..10);
-        assert_eq!(range(Unbounded, Included(20)).unchecked(10), 0..21);
-        assert_eq!(range(Unbounded, Excluded(20)).unchecked(10), 0..20);
-        assert_eq!(range(Included(30), Unbounded).unchecked(10), 30..10);
-        assert_eq!(range(Included(30), Included(20)).unchecked(10), 30..21);
-        assert_eq!(range(Included(30), Excluded(20)).unchecked(10), 30..20);
-        assert_eq!(range(Excluded(30), Unbounded).unchecked(10), 31..10);
-        assert_eq!(range(Excluded(30), Included(20)).unchecked(10), 31..21);
-        assert_eq!(range(Excluded(30), Excluded(20)).unchecked(10), 31..20);
-    }
 
     #[test]
     fn checked() {
@@ -141,5 +123,23 @@ mod tests {
             Excluded(usize::MAX), Included(8)
             Excluded(usize::MAX), Excluded(8)
         );
+    }
+
+    #[test]
+    fn unchecked() {
+        fn range(a: Bound<usize>, b: Bound<usize>) -> (Bound<usize>, Bound<usize>) {
+            (a, b)
+        }
+
+        // It converts to Range without bounds checking
+        assert_eq!(range(Unbounded, Unbounded).unchecked(10), 0..10);
+        assert_eq!(range(Unbounded, Included(20)).unchecked(10), 0..21);
+        assert_eq!(range(Unbounded, Excluded(20)).unchecked(10), 0..20);
+        assert_eq!(range(Included(30), Unbounded).unchecked(10), 30..10);
+        assert_eq!(range(Included(30), Included(20)).unchecked(10), 30..21);
+        assert_eq!(range(Included(30), Excluded(20)).unchecked(10), 30..20);
+        assert_eq!(range(Excluded(30), Unbounded).unchecked(10), 31..10);
+        assert_eq!(range(Excluded(30), Included(20)).unchecked(10), 31..21);
+        assert_eq!(range(Excluded(30), Excluded(20)).unchecked(10), 31..20);
     }
 }

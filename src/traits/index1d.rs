@@ -3,18 +3,14 @@ use std::ops::{Range, RangeBounds};
 
 /// Indexing into a column or a row of a grid, with optional slicing.
 pub trait Index1D {
-    /// Returns the index **without** bounds checking.
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>);
-
     /// Returns the index **with** bounds checking.
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)>;
+
+    /// Returns the index **without** bounds checking.
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>);
 }
 
 impl Index1D for usize {
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
-        (self, 0..max_index)
-    }
-
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         if self < max_index {
             Some((self, 0..max_end))
@@ -22,13 +18,13 @@ impl Index1D for usize {
             None
         }
     }
+
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
+        (self, 0..max_index)
+    }
 }
 
 impl<T: RangeBounds<usize>> Index1D for (usize, T) {
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
-        (self.0, ToRange::unchecked(self.1, max_index))
-    }
-
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         let (i, range) = self;
 
@@ -38,6 +34,10 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
             None
         }
     }
+
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
+        (self.0, ToRange::unchecked(self.1, max_index))
+    }
 }
 
 #[cfg(test)]
@@ -46,16 +46,16 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn unchecked() {
-        // It does not bounds check
-        assert_eq!(10.unchecked(2), (10, 0..2));
-        assert_eq!((10, 100..1000).unchecked(2), (10, 100..1000));
-    }
-
-    #[test]
     fn checked() {
         // It returns None when i >= len
         assert_eq!(20.checked(10, 12), None);
         assert_eq!((20, 0..5).checked(10, 12), None);
+    }
+
+    #[test]
+    fn unchecked() {
+        // It does not bounds check
+        assert_eq!(10.unchecked(2), (10, 0..2));
+        assert_eq!((10, 100..1000).unchecked(2), (10, 100..1000));
     }
 }

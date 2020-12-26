@@ -9,13 +9,6 @@ pub struct RowsHelper<'a, T: ?Sized> {
 }
 
 impl<'a, T: IGrid<'a> + ?Sized> RowsHelper<'a, T> {
-    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index2D) -> Self {
-        Self {
-            grid,
-            index: index.unchecked(grid.size()),
-        }
-    }
-
     pub fn new(grid: &'a T, index: impl Index2D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let Point { x, y } = index.checked(grid.size())?;
@@ -26,6 +19,13 @@ impl<'a, T: IGrid<'a> + ?Sized> RowsHelper<'a, T> {
         debug_assert!(x.end <= width);
         debug_assert!(y.end <= height);
         Some(unsafe { Self::new_unchecked(grid, (x, y)) })
+    }
+
+    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index2D) -> Self {
+        Self {
+            grid,
+            index: index.unchecked(grid.size()),
+        }
     }
 }
 

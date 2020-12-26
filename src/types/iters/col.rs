@@ -10,15 +10,6 @@ pub struct ColHelper<'a, T: ?Sized> {
 }
 
 impl<'a, T: IGrid<'a> + ?Sized> ColHelper<'a, T> {
-    /// Returns a [`ColHelper`](crate::ColHelper) without bounds checking.
-    ///
-    /// See [`IGrid::col_unchecked`](crate::IGrid::col_unchecked) for safety.
-    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
-        let (col, range) = index.unchecked(grid.size().height);
-
-        Self { grid, col, range }
-    }
-
     /// Returns a [`ColHelper`](crate::ColHelper), or `None` if `col >= width`.
     pub fn new(grid: &'a T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
@@ -30,6 +21,15 @@ impl<'a, T: IGrid<'a> + ?Sized> ColHelper<'a, T> {
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= height);
         Some(unsafe { Self::new_unchecked(grid, (col, range)) })
+    }
+
+    /// Returns a [`ColHelper`](crate::ColHelper) without bounds checking.
+    ///
+    /// See [`IGrid::col_unchecked`](crate::IGrid::col_unchecked) for safety.
+    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
+        let (col, range) = index.unchecked(grid.size().height);
+
+        Self { grid, col, range }
     }
 }
 

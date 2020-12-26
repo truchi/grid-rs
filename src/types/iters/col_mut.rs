@@ -10,18 +10,6 @@ impl<'a, T: IGridMut<'a>> ColMutHelper<'a, T> {
     /// ### Safety
     /// callers **MUST** ensure:
     /// - cell_mut_unchecked returns valid, non-overlapping references
-    /// - `col < width`
-    /// - `start <= end`
-    /// - `end <= width`
-    pub unsafe fn new_unchecked(grid: &'a mut T, index: impl Index1D) -> Self {
-        let (col, range) = index.unchecked(grid.size().height);
-
-        Self { grid, col, range }
-    }
-
-    /// ### Safety
-    /// callers **MUST** ensure:
-    /// - cell_mut_unchecked returns valid, non-overlapping references
     pub unsafe fn new(grid: &'a mut T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let (col, range) = index.checked(width, height)?;
@@ -33,6 +21,18 @@ impl<'a, T: IGridMut<'a>> ColMutHelper<'a, T> {
         debug_assert!(range.end <= width);
         #[allow(unused_unsafe)]
         Some(unsafe { Self::new_unchecked(grid, (col, range)) })
+    }
+
+    /// ### Safety
+    /// callers **MUST** ensure:
+    /// - cell_mut_unchecked returns valid, non-overlapping references
+    /// - `col < width`
+    /// - `start <= end`
+    /// - `end <= width`
+    pub unsafe fn new_unchecked(grid: &'a mut T, index: impl Index1D) -> Self {
+        let (col, range) = index.unchecked(grid.size().height);
+
+        Self { grid, col, range }
     }
 }
 
