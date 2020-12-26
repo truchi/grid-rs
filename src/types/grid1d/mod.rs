@@ -18,12 +18,8 @@ pub enum Grid1DError<T> {
 
 /// 2D [`Grid1D`](crate::Grid1D).
 ///
-/// RowMajor:      ColumnMajor:
-/// - cell         - cell
-/// - row          - col
-/// - row_iter     - col_iter
-/// - col_iter     - row_iter
-/// - cells_iter   - cells_iter
+/// @see [`ColMajor1D`](crate::ColMajor1D).
+/// @see [`RowMajor1D`](crate::RowMajor1D).
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Grid1D<Major, Cell, Collection> {
     phantom: PhantomData<(Major, Cell)>,
