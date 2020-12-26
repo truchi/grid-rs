@@ -47,13 +47,15 @@ mod tests {
 
     #[test]
     fn unchecked() {
-        // It does not bounds check;
+        // It does not bounds check
+        assert_eq!(10.unchecked(2), (10, 0..2));
         assert_eq!((10, 100..1000).unchecked(2), (10, 100..1000));
     }
 
     #[test]
     fn checked() {
         // It returns None when i >= len
+        assert_eq!(20.checked(10, 12), None);
         assert_eq!((20, 0..5).checked(10, 12), None);
     }
 }
