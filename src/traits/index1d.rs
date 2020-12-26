@@ -1,8 +1,12 @@
 use crate::*;
-use std::ops::{Bound, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
+use std::ops::{Range, RangeBounds};
 
+/// Indexing into a column or a row of a grid.
 pub trait Index1D {
+    /// Returns the index **without** bounds checking.
     fn unchecked(self, max: usize) -> (usize, Range<usize>);
+
+    /// Returns the index **with** bounds checking.
     fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)>;
 }
 
@@ -20,43 +24,37 @@ impl Index1D for usize {
     }
 }
 
-impl Index1D for (usize, Bound<usize>, Bound<usize>) {
+impl<T: RangeBounds<usize>> Index1D for (usize, T) {
     fn unchecked(self, max: usize) -> (usize, Range<usize>) {
-        (self.0, ToRange::unchecked((self.1, self.2), max))
+        (self.0, ToRange::unchecked(self.1, max))
     }
 
     fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)> {
-        let (i, start, end) = self;
+        let (i, range) = self;
 
         if i < max.0 {
-            Some((i, ToRange::checked((start, end), max.1)?))
+            Some((i, ToRange::checked(range, max.1)?))
         } else {
             None
         }
     }
 }
 
-macro_rules! ranges {
-    ($($Type:ty)*) => { $(
-        impl Index1D for (usize, $Type) {
-            fn unchecked(self, max: usize) -> (usize, Range<usize>) {
-                (self.0, ToRange::unchecked(self.1, max))
-            }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use std::ops::Bound;
 
-            fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)> {
-                let (i, range) = self;
+    #[test]
+    fn unchecked() {
+        // It does not bounds check;
+        assert_eq!((10, 100..1000).unchecked(2), (10, 100..1000));
+    }
 
-                if i < max.0 { Some((i, ToRange::checked(range, max.1)?)) } else { None }
-            }
-        }
-    )* };
+    #[test]
+    fn checked() {
+        // It returns None when i >= len
+        assert_eq!((20, 0..5).checked((10, 10)), None);
+    }
 }
-
-ranges!(
-    Range<usize>
-    RangeInclusive<usize>
-    RangeFrom<usize>
-    RangeTo<usize>
-    RangeToInclusive<usize>
-    RangeFull
-);

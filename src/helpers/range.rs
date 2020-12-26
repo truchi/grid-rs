@@ -57,7 +57,7 @@ mod tests {
             (a, b)
         }
 
-        // It converts to Range without bounds checking.
+        // It converts to Range without bounds checking
         assert_eq!(range(Unbounded, Unbounded).unchecked(10), 0..10);
         assert_eq!(range(Unbounded, Included(20)).unchecked(10), 0..21);
         assert_eq!(range(Unbounded, Excluded(20)).unchecked(10), 0..20);
@@ -101,7 +101,7 @@ mod tests {
             } )* };
         }
 
-        // It converts to Range with bounds checking.
+        // It converts to Range with bounds checking
         assert!(Some 10
             Unbounded, Unbounded, 0..10
             Unbounded, Included(8), 0..9
@@ -114,7 +114,7 @@ mod tests {
             Excluded(5), Excluded(8), 6..8
         );
 
-        // It returns None when start > end.
+        // It returns None when start > end
         assert!(None 10
             Included(7), Included(3)
             Included(7), Excluded(3)
@@ -122,7 +122,7 @@ mod tests {
             Excluded(7), Excluded(3)
         );
 
-        // It returns None when end > len.
+        // It returns None when end > len
         assert!(None 10
             Unbounded, Included(20)
             Unbounded, Excluded(20)
@@ -132,7 +132,7 @@ mod tests {
             Excluded(5), Excluded(20)
         );
 
-        // It returns None when usize::MAX.
+        // It returns None when usize::MAX
         assert!(None 10
             Unbounded, Included(usize::MAX)
             Included(5), Included(usize::MAX)
