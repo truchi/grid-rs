@@ -1,22 +1,38 @@
 use crate::*;
 use std::ops::Range;
 
+/// A marker type for [`ColMajor`](crate::ColMajor) grids.
+///
+/// This type cannot be instanciated. It serves as a marker for grid whose
+/// collection is storing its element in a column-major fashion (column by
+/// column).
 #[derive(Debug)]
 pub enum ColMajor {}
 
+/// ### Methods
 impl ColMajor {
-    pub fn cell_unchecked(size: Size<usize>, cell: Point<usize>) -> usize {
-        cell.x * size.height + cell.y
+    /// Returns the index of the element at `point` in a column-major grid of
+    /// size `size`.
+    ///
+    /// Does **not** check if `point < size`.
+    pub fn cell_unchecked(size: Size<usize>, point: Point<usize>) -> usize {
+        point.x * size.height + point.y
     }
 
-    pub fn cell(size: Size<usize>, cell: Point<usize>) -> Option<usize> {
-        if cell < size {
-            Some(Self::cell_unchecked(size, cell))
+    /// Returns the index of the element at `point` in a column-major grid of
+    /// size `size` if `point < size`, `None` otherwise.
+    pub fn cell(size: Size<usize>, point: Point<usize>) -> Option<usize> {
+        if point < size {
+            Some(Self::cell_unchecked(size, point))
         } else {
             None
         }
     }
 
+    /// Returns the range of the column `index` in a column-major grid of size
+    /// `size`.
+    ///
+    /// Does **not** check if `index < size`.
     pub fn col_unchecked(size: Size<usize>, index: impl Index1D) -> Range<usize> {
         let (col, range) = index.unchecked(size.height);
 
@@ -31,6 +47,8 @@ impl ColMajor {
         }
     }
 
+    /// Returns the range of the col `index` in a column-major grid of size
+    /// `size` if `index < size`, `None` otherwise.
     pub fn col(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
         let (width, height) = size.into();
         let (col, range) = index.checked((width, height))?;

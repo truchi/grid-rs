@@ -1,24 +1,36 @@
 use crate::*;
 use std::ops::Range;
 
-/// A marker type for row major grids.
+/// A marker type for [`RowMajor`](crate::RowMajor) grids.
+///
+/// This type cannot be instanciated. It serves as a marker for grid whose
+/// collection is storing its element in a row-major fashion (row by row).
 #[derive(Debug)]
 pub enum RowMajor {}
 
 /// ### Methods
 impl RowMajor {
-    pub fn cell_unchecked(size: Size<usize>, cell: Point<usize>) -> usize {
-        cell.y * size.width + cell.x
+    /// Returns the index of the element at `point` in a row-major grid of
+    /// size `size`.
+    ///
+    /// Does **not** check if `point < size`.
+    pub fn cell_unchecked(size: Size<usize>, point: Point<usize>) -> usize {
+        point.y * size.width + point.x
     }
 
-    pub fn cell(size: Size<usize>, cell: Point<usize>) -> Option<usize> {
-        if cell < size {
-            Some(Self::cell_unchecked(size, cell))
+    /// Returns the index of the element at `point` in a row-major grid of
+    /// size `size` if `point < size`, `None` otherwise.
+    pub fn cell(size: Size<usize>, point: Point<usize>) -> Option<usize> {
+        if point < size {
+            Some(Self::cell_unchecked(size, point))
         } else {
             None
         }
     }
 
+    /// Returns the range of the row `index` in a row-major grid of size `size`.
+    ///
+    /// Does **not** check if `index < size`.
     pub fn row_unchecked(size: Size<usize>, index: impl Index1D) -> Range<usize> {
         let (row, range) = index.unchecked(size.width);
 
@@ -33,6 +45,8 @@ impl RowMajor {
         }
     }
 
+    /// Returns the range of the row `index` in a row-major grid of size `size`
+    /// if `index < size`, `None` otherwise.
     pub fn row(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
         let (width, height) = size.into();
         let (row, range) = index.checked((height, width))?;
