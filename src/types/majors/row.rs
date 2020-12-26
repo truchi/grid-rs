@@ -21,7 +21,7 @@ impl RowMajor {
         let (width, height) = size.into();
         let (row, range) = index.checked((height, width))?;
 
-        if row < size.height {
+        if row < height {
             Some(Self::row_unchecked(size, (row, range)))
         } else {
             None
