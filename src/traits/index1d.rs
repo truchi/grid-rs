@@ -1,23 +1,23 @@
 use crate::*;
 use std::ops::{Range, RangeBounds};
 
-/// Indexing into a column or a row of a grid.
+/// Indexing into a column or a row of a grid, with optional slicing.
 pub trait Index1D {
     /// Returns the index **without** bounds checking.
-    fn unchecked(self, max: usize) -> (usize, Range<usize>);
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>);
 
     /// Returns the index **with** bounds checking.
-    fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)>;
+    fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)>;
 }
 
 impl Index1D for usize {
-    fn unchecked(self, max: usize) -> (usize, Range<usize>) {
-        (self, 0..max)
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
+        (self, 0..max_index)
     }
 
-    fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)> {
-        if self < max.0 {
-            Some((self, 0..max.1))
+    fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
+        if self < max_index {
+            Some((self, 0..max_end))
         } else {
             None
         }
@@ -25,15 +25,15 @@ impl Index1D for usize {
 }
 
 impl<T: RangeBounds<usize>> Index1D for (usize, T) {
-    fn unchecked(self, max: usize) -> (usize, Range<usize>) {
-        (self.0, ToRange::unchecked(self.1, max))
+    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
+        (self.0, ToRange::unchecked(self.1, max_index))
     }
 
-    fn checked(self, max: (usize, usize)) -> Option<(usize, Range<usize>)> {
+    fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         let (i, range) = self;
 
-        if i < max.0 {
-            Some((i, ToRange::checked(range, max.1)?))
+        if i < max_index {
+            Some((i, ToRange::checked(range, max_end)?))
         } else {
             None
         }
@@ -44,7 +44,6 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
-    use std::ops::Bound;
 
     #[test]
     fn unchecked() {
@@ -55,6 +54,6 @@ mod tests {
     #[test]
     fn checked() {
         // It returns None when i >= len
-        assert_eq!((20, 0..5).checked((10, 10)), None);
+        assert_eq!((20, 0..5).checked(10, 12), None);
     }
 }

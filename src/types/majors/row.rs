@@ -49,7 +49,7 @@ impl RowMajor {
     /// if `index < size`, `None` otherwise.
     pub fn row(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
         let (width, height) = size.into();
-        let (row, range) = index.checked((height, width))?;
+        let (row, range) = index.checked(height, width)?;
 
         if row < height {
             Some(Self::row_unchecked(size, (row, range)))

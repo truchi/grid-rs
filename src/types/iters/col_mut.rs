@@ -24,7 +24,7 @@ impl<'a, T: IGridMut<'a>> ColMutHelper<'a, T> {
     /// - cell_mut_unchecked returns valid, non-overlapping references
     pub unsafe fn new(grid: &'a mut T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
-        let (col, range) = index.checked((width, height))?;
+        let (col, range) = index.checked(width, height)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:

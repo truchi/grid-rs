@@ -31,7 +31,7 @@ pub trait IGridMut<'a>: IGrid<'a> {
 
     fn row_mut(&'a mut self, index: impl Index1D) -> Option<Self::RowMut> {
         let (width, height) = self.size().into();
-        let (row, range) = index.checked((height, width))?;
+        let (row, range) = index.checked(height, width)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:
@@ -43,7 +43,7 @@ pub trait IGridMut<'a>: IGrid<'a> {
 
     fn col_mut(&'a mut self, index: impl Index1D) -> Option<Self::ColMut> {
         let (width, height) = self.size().into();
-        let (col, range) = index.checked((width, height))?;
+        let (col, range) = index.checked(width, height)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:

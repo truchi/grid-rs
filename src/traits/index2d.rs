@@ -3,6 +3,7 @@ use std::ops::{Bound, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, Rang
 
 pub trait Index2D {
     fn unchecked(self, size: Size<usize>) -> Point<Range<usize>>;
+
     fn checked(self, size: Size<usize>) -> Option<Point<Range<usize>>>;
 }
 

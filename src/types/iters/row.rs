@@ -22,7 +22,7 @@ impl<'a, T: IGrid<'a> + ?Sized> RowHelper<'a, T> {
     /// Returns a [`RowHelper`](crate::RowHelper), or `None` if `row >= height`.
     pub fn new(grid: &'a T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
-        let (row, range) = index.checked((height, width))?;
+        let (row, range) = index.checked(height, width)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:

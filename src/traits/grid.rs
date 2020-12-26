@@ -84,7 +84,7 @@ pub trait IGrid<'a> {
     /// or `None` if `row >= height`.
     fn row(&'a self, index: impl Index1D) -> Option<Self::Row> {
         let (width, height) = self.size().into();
-        let (row, range) = index.checked((height, width))?;
+        let (row, range) = index.checked(height, width)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:
@@ -98,7 +98,7 @@ pub trait IGrid<'a> {
     /// or `None` if `col >= width`.
     fn col(&'a self, index: impl Index1D) -> Option<Self::Col> {
         let (width, height) = self.size().into();
-        let (col, range) = index.checked((width, height))?;
+        let (col, range) = index.checked(width, height)?;
 
         // SAFETY:
         // Index1D::checked guaranties that:

@@ -51,7 +51,7 @@ impl ColMajor {
     /// `size` if `index < size`, `None` otherwise.
     pub fn col(size: Size<usize>, index: impl Index1D) -> Option<Range<usize>> {
         let (width, height) = size.into();
-        let (col, range) = index.checked((width, height))?;
+        let (col, range) = index.checked(width, height)?;
 
         if col < width {
             Some(Self::col_unchecked(size, (col, range)))
