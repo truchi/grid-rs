@@ -53,7 +53,7 @@ impl<'a, T: GridMut<'a>> Iterator for RowsMutHelper<'a, T> {
             let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
 
             // SAFETY: constructors guaranty this is safe
-            let it = unsafe { grid.row_mut_unchecked((start, self.index.x.clone())) };
+            let it = unsafe { grid.row_unchecked_mut((start, self.index.x.clone())) };
 
             Some(it)
         } else {

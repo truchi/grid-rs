@@ -11,7 +11,7 @@ pub trait GridMut<'a>: Grid<'a> {
         if point < self.size() {
             // SAFETY:
             // point < size
-            Some(unsafe { self.cell_mut_unchecked(point) })
+            Some(unsafe { self.cell_unchecked_mut(point) })
         } else {
             None
         }
@@ -26,7 +26,7 @@ pub trait GridMut<'a>: Grid<'a> {
         debug_assert!(col < width);
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= height);
-        Some(unsafe { self.col_mut_unchecked((col, range)) })
+        Some(unsafe { self.col_unchecked_mut((col, range)) })
     }
 
     fn row_mut(&'a mut self, index: impl Index1D) -> Option<Self::RowMut> {
@@ -38,7 +38,7 @@ pub trait GridMut<'a>: Grid<'a> {
         debug_assert!(row < height);
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= width);
-        Some(unsafe { self.row_mut_unchecked((row, range)) })
+        Some(unsafe { self.row_unchecked_mut((row, range)) })
     }
 
     fn cols_mut(&'a mut self, index: impl Index2D) -> Option<Self::ColsMut> {
@@ -51,7 +51,7 @@ pub trait GridMut<'a>: Grid<'a> {
         debug_assert!(y.start <= y.end);
         debug_assert!(x.end <= width);
         debug_assert!(y.end <= height);
-        Some(unsafe { self.cols_mut_unchecked((x, y)) })
+        Some(unsafe { self.cols_unchecked_mut((x, y)) })
     }
 
     fn rows_mut(&'a mut self, index: impl Index2D) -> Option<Self::RowsMut> {
@@ -64,7 +64,7 @@ pub trait GridMut<'a>: Grid<'a> {
         debug_assert!(y.start <= y.end);
         debug_assert!(x.end <= width);
         debug_assert!(y.end <= height);
-        Some(unsafe { self.rows_mut_unchecked((x, y)) })
+        Some(unsafe { self.rows_unchecked_mut((x, y)) })
     }
 
     fn cells_mut(&'a mut self, index: impl Index2D) -> Option<Self::CellsMut> {
@@ -77,18 +77,18 @@ pub trait GridMut<'a>: Grid<'a> {
         debug_assert!(y.start <= y.end);
         debug_assert!(x.end <= width);
         debug_assert!(y.end <= height);
-        Some(unsafe { self.cells_mut_unchecked((x, y)) })
+        Some(unsafe { self.cells_unchecked_mut((x, y)) })
     }
 
-    unsafe fn cell_mut_unchecked(&mut self, point: Point<usize>) -> &mut Self::Cell;
+    unsafe fn cell_unchecked_mut(&mut self, point: Point<usize>) -> &mut Self::Cell;
 
-    unsafe fn col_mut_unchecked(&'a mut self, index: impl Index1D) -> Self::ColMut;
+    unsafe fn col_unchecked_mut(&'a mut self, index: impl Index1D) -> Self::ColMut;
 
-    unsafe fn row_mut_unchecked(&'a mut self, index: impl Index1D) -> Self::RowMut;
+    unsafe fn row_unchecked_mut(&'a mut self, index: impl Index1D) -> Self::RowMut;
 
-    unsafe fn cols_mut_unchecked(&'a mut self, index: impl Index2D) -> Self::ColsMut;
+    unsafe fn cols_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::ColsMut;
 
-    unsafe fn rows_mut_unchecked(&'a mut self, index: impl Index2D) -> Self::RowsMut;
+    unsafe fn rows_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::RowsMut;
 
-    unsafe fn cells_mut_unchecked(&'a mut self, index: impl Index2D) -> Self::CellsMut;
+    unsafe fn cells_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::CellsMut;
 }

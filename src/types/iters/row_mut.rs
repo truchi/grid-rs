@@ -52,7 +52,7 @@ impl<'a, T: GridMut<'a>> Iterator for RowMutHelper<'a, T> {
             // SAFETY:
             // constructors guaranty that:
             debug_assert!(point < self.grid.size());
-            let cell = unsafe { self.grid.cell_mut_unchecked(point) };
+            let cell = unsafe { self.grid.cell_unchecked_mut(point) };
 
             // SAFETY:
             // constructors also guaranty that:
