@@ -8,7 +8,7 @@ pub struct ColsMutHelper<'a, T: ?Sized> {
     index: Point<Range<usize>>,
 }
 
-impl<'a, T: Grid<'a> + ?Sized> ColsMutHelper<'a, T> {
+impl<'a, T: GridMut<'a> + ?Sized> ColsMutHelper<'a, T> {
     /// ### Safety
     /// callers **MUST** ensure:
     /// - grid is valid

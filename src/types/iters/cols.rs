@@ -8,7 +8,7 @@ pub struct ColsHelper<'a, T: ?Sized> {
     index: Point<Range<usize>>,
 }
 
-impl<'a, T: Grid<'a> + ?Sized> ColsHelper<'a, T> {
+impl<'a, T: GridRef<'a> + ?Sized> ColsHelper<'a, T> {
     pub fn new(grid: &'a T, index: impl Index2D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let Point { x, y } = index.checked(grid.size())?;
@@ -29,7 +29,7 @@ impl<'a, T: Grid<'a> + ?Sized> ColsHelper<'a, T> {
     }
 }
 
-impl<'a, T: Grid<'a>> Iterator for ColsHelper<'a, T> {
+impl<'a, T: GridRef<'a>> Iterator for ColsHelper<'a, T> {
     type Item = T::Col;
 
     fn next(&mut self) -> Option<Self::Item> {

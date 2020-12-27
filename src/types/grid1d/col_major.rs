@@ -43,17 +43,20 @@ impl<Cell, Collection: AsMut<[Cell]>> ColMajor1D<Cell, Collection> {
     }
 }
 
-impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> Grid<'a> for ColMajor1D<Cell, Collection> {
+impl<Cell, Collection> Grid for ColMajor1D<Cell, Collection> {
     type Cell = Cell;
+
+    fn size(&self) -> Size<usize> {
+        self.size
+    }
+}
+
+impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> GridRef<'a> for ColMajor1D<Cell, Collection> {
     type Cells = std::iter::Flatten<Self::Cols>;
     type Col = std::slice::Iter<'a, Cell>;
     type Cols = ColsHelper<'a, Self>;
     type Row = RowHelper<'a, Self>;
     type Rows = RowsHelper<'a, Self>;
-
-    fn size(&self) -> Size<usize> {
-        self.size
-    }
 
     unsafe fn cell_unchecked(&self, point: Point<usize>) -> &Cell {
         self.cells

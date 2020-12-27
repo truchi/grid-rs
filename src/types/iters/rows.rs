@@ -8,7 +8,7 @@ pub struct RowsHelper<'a, T: ?Sized> {
     index: Point<Range<usize>>,
 }
 
-impl<'a, T: Grid<'a> + ?Sized> RowsHelper<'a, T> {
+impl<'a, T: GridRef<'a> + ?Sized> RowsHelper<'a, T> {
     pub fn new(grid: &'a T, index: impl Index2D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let Point { x, y } = index.checked(grid.size())?;
@@ -29,7 +29,7 @@ impl<'a, T: Grid<'a> + ?Sized> RowsHelper<'a, T> {
     }
 }
 
-impl<'a, T: Grid<'a>> Iterator for RowsHelper<'a, T> {
+impl<'a, T: GridRef<'a>> Iterator for RowsHelper<'a, T> {
     type Item = T::Row;
 
     fn next(&mut self) -> Option<Self::Item> {

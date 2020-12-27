@@ -1,6 +1,9 @@
 use crate::*;
 
-pub trait GridMut<'a>: Grid<'a> {
+pub trait GridMut<'a>: Grid
+where
+    Self::Cell: 'a,
+{
     type ColMut: Iterator<Item = &'a mut Self::Cell>;
     type RowMut: Iterator<Item = &'a mut Self::Cell>;
     type ColsMut: Iterator<Item = Self::ColMut>;
