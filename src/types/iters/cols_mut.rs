@@ -39,7 +39,7 @@ impl<'a, T: GridMut<'a> + ?Sized> ColsMutHelper<'a, T> {
 }
 
 impl<'a, T: GridMut<'a>> Iterator for ColsMutHelper<'a, T> {
-    type Item = T::RowMut;
+    type Item = T::ColMut;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Range { start, end } = self.index.x;
@@ -53,7 +53,7 @@ impl<'a, T: GridMut<'a>> Iterator for ColsMutHelper<'a, T> {
             let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
 
             // SAFETY: constructors guaranty this is safe
-            let it = unsafe { grid.row_unchecked_mut((start, self.index.y.clone())) };
+            let it = unsafe { grid.col_unchecked_mut((start, self.index.y.clone())) };
 
             Some(it)
         } else {
