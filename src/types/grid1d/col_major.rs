@@ -10,7 +10,7 @@ impl<Cell, Collection: AsRef<[Cell]>> ColMajor1D<Cell, Collection> {
         let cells = self.cells.as_ref();
 
         // SAFETY:
-        // RowMajor::row does the bounds checking
+        // ColMajor::col does the bounds checking
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= self.size.width * self.size.height);
         Some(unsafe { cells.get_unchecked(range) })
