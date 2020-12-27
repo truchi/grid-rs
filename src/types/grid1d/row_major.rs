@@ -22,6 +22,27 @@ impl<Cell, Collection: AsRef<[Cell]>> RowMajor1D<Cell, Collection> {
     }
 }
 
+/// ### Mutable methods
+/// @see [`RowMajor1D`](crate::RowMajor1D).
+impl<Cell, Collection: AsMut<[Cell]>> RowMajor1D<Cell, Collection> {
+    pub fn get_row_mut(&mut self, index: impl Index1D) -> Option<&mut [Cell]> {
+        let range = RowMajor::row(self.size, index)?;
+        let cells = self.as_mut();
+
+        // SAFETY:
+        // RowMajor::row does the bounds checking
+        debug_assert!(range.start <= range.end);
+        debug_assert!(range.end <= cells.len());
+        Some(unsafe { cells.get_unchecked_mut(range) })
+    }
+
+    pub unsafe fn get_row_unchecked_mut(&mut self, index: impl Index1D) -> &mut [Cell] {
+        self.cells
+            .as_mut()
+            .get_unchecked_mut(RowMajor::row_unchecked(self.size, index))
+    }
+}
+
 impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> Grid<'a> for RowMajor1D<Cell, Collection> {
     type Cell = Cell;
     type Cells = std::iter::Flatten<Self::Rows>;

@@ -18,8 +18,8 @@ pub enum Grid1DError<T> {
 
 /// 2D [`Grid1D`](crate::Grid1D).
 ///
-/// @see [`ColMajor1D`](crate::ColMajor1D).
-/// @see [`RowMajor1D`](crate::RowMajor1D).
+/// @see [`ColMajor1D`](crate::ColMajor1D) and
+/// [`RowMajor1D`](crate::RowMajor1D).
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Grid1D<Major, Cell, Collection> {
     phantom: PhantomData<(Major, Cell)>,
