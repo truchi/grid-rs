@@ -7,18 +7,17 @@ pub type RowMajor1D<Cell, Collection> = Grid1D<RowMajor, Cell, Collection>;
 impl<Cell, Collection: AsRef<[Cell]>> RowMajor1D<Cell, Collection> {
     pub fn get_row(&self, index: impl Index1D) -> Option<&[Cell]> {
         let range = RowMajor::row(self.size, index)?;
-        let cells = self.cells.as_ref();
+        let cells = self.as_ref();
 
         // SAFETY:
         // RowMajor::row does the bounds checking
         debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= self.size.width * self.size.height);
+        debug_assert!(range.end <= cells.len());
         Some(unsafe { cells.get_unchecked(range) })
     }
 
     pub unsafe fn get_row_unchecked(&self, index: impl Index1D) -> &[Cell] {
-        self.cells
-            .as_ref()
+        self.as_ref()
             .get_unchecked(RowMajor::row_unchecked(self.size, index))
     }
 }
