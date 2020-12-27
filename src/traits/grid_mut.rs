@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait IGridMut<'a>: IGrid<'a> {
+pub trait GridMut<'a>: Grid<'a> {
     type ColMut: Iterator<Item = &'a mut Self::Cell>;
     type RowMut: Iterator<Item = &'a mut Self::Cell>;
     type ColsMut: Iterator<Item = Self::ColMut>;

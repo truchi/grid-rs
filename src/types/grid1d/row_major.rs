@@ -23,7 +23,7 @@ impl<Cell, Collection: AsRef<[Cell]>> RowMajor1D<Cell, Collection> {
     }
 }
 
-impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> IGrid<'a> for RowMajor1D<Cell, Collection> {
+impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> Grid<'a> for RowMajor1D<Cell, Collection> {
     type Cell = Cell;
     type Cells = std::iter::Flatten<Self::Rows>;
     type Col = ColHelper<'a, Self>;

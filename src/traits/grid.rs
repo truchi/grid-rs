@@ -1,7 +1,7 @@
 use crate::*;
 
 /// Grid trait.
-pub trait IGrid<'a> {
+pub trait Grid<'a> {
     /// The type of the elements.
     type Cell: 'a;
 

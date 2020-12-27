@@ -8,7 +8,7 @@ pub struct RowsMutHelper<'a, T: ?Sized> {
     index: Point<Range<usize>>,
 }
 
-impl<'a, T: IGrid<'a> + ?Sized> RowsMutHelper<'a, T> {
+impl<'a, T: Grid<'a> + ?Sized> RowsMutHelper<'a, T> {
     /// ### Safety
     /// callers **MUST** ensure:
     /// - grid is valid
@@ -38,7 +38,7 @@ impl<'a, T: IGrid<'a> + ?Sized> RowsMutHelper<'a, T> {
     }
 }
 
-impl<'a, T: IGridMut<'a>> Iterator for RowsMutHelper<'a, T> {
+impl<'a, T: GridMut<'a>> Iterator for RowsMutHelper<'a, T> {
     type Item = T::RowMut;
 
     fn next(&mut self) -> Option<Self::Item> {

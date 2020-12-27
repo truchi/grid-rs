@@ -6,7 +6,7 @@ pub struct RowMutHelper<'a, T> {
     range: std::ops::Range<usize>,
 }
 
-impl<'a, T: IGridMut<'a>> RowMutHelper<'a, T> {
+impl<'a, T: GridMut<'a>> RowMutHelper<'a, T> {
     /// ### Safety
     /// callers **MUST** ensure:
     /// - cell_mut_unchecked returns valid, non-overlapping references
@@ -36,7 +36,7 @@ impl<'a, T: IGridMut<'a>> RowMutHelper<'a, T> {
     }
 }
 
-impl<'a, T: IGridMut<'a>> Iterator for RowMutHelper<'a, T> {
+impl<'a, T: GridMut<'a>> Iterator for RowMutHelper<'a, T> {
     type Item = &'a mut T::Cell;
 
     fn next(&mut self) -> Option<Self::Item> {
