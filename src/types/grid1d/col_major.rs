@@ -2,10 +2,13 @@ use crate::*;
 
 pub type ColMajor1D<Cell, Collection> = Grid1D<ColMajor, Cell, Collection>;
 
-/// ### Methods
+/// ### `ColMajor1D` methods
 /// @see [`ColMajor1D`](crate::ColMajor1D).
-impl<Cell, Collection: AsRef<[Cell]>> ColMajor1D<Cell, Collection> {
-    pub fn get_col(&self, index: impl Index1D) -> Option<&[Cell]> {
+impl<Cell, Collection> ColMajor1D<Cell, Collection> {
+    pub fn get_col(&self, index: impl Index1D) -> Option<&[Cell]>
+    where
+        Collection: AsRef<[Cell]>,
+    {
         let range = ColMajor::col(self.size, index)?;
         let cells = self.as_ref();
 
@@ -16,16 +19,18 @@ impl<Cell, Collection: AsRef<[Cell]>> ColMajor1D<Cell, Collection> {
         Some(unsafe { cells.get_unchecked(range) })
     }
 
-    pub unsafe fn get_col_unchecked(&self, index: impl Index1D) -> &[Cell] {
+    pub unsafe fn get_col_unchecked(&self, index: impl Index1D) -> &[Cell]
+    where
+        Collection: AsRef<[Cell]>,
+    {
         self.as_ref()
             .get_unchecked(ColMajor::col_unchecked(self.size, index))
     }
-}
 
-/// ### Mutable methods
-/// @see [`ColMajor1D`](crate::ColMajor1D).
-impl<Cell, Collection: AsMut<[Cell]>> ColMajor1D<Cell, Collection> {
-    pub fn get_col_mut(&mut self, index: impl Index1D) -> Option<&mut [Cell]> {
+    pub fn get_col_mut(&mut self, index: impl Index1D) -> Option<&mut [Cell]>
+    where
+        Collection: AsMut<[Cell]>,
+    {
         let range = ColMajor::col(self.size, index)?;
         let cells = self.as_mut();
 
@@ -36,7 +41,10 @@ impl<Cell, Collection: AsMut<[Cell]>> ColMajor1D<Cell, Collection> {
         Some(unsafe { cells.get_unchecked_mut(range) })
     }
 
-    pub unsafe fn get_col_unchecked_mut(&mut self, index: impl Index1D) -> &mut [Cell] {
+    pub unsafe fn get_col_unchecked_mut(&mut self, index: impl Index1D) -> &mut [Cell]
+    where
+        Collection: AsMut<[Cell]>,
+    {
         self.cells
             .as_mut()
             .get_unchecked_mut(ColMajor::col_unchecked(self.size, index))
