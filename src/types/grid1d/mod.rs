@@ -28,19 +28,48 @@ pub struct Grid1D<Major, Cell, Collection> {
 }
 
 /// ### Constructors
-impl<Major, Cell, Collection: AsRef<[Cell]>> Grid1D<Major, Cell, Collection> {
+impl<Major, Cell, Collection> Grid1D<Major, Cell, Collection> {
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
     pub fn new<S: Into<Size<usize>>>(
         size: S,
         cells: Collection,
-    ) -> Result<Self, Grid1DError<Collection>> {
+    ) -> Result<Self, Grid1DError<Collection>>
+    where
+        Collection: AsRef<[Cell]>,
+    {
         let size = size.into();
 
         match size.width.checked_mul(size.height) {
             None => Err(Grid1DError::Overflow(size, cells)),
             Some(area) =>
                 if area != cells.as_ref().len() {
+                    Err(Grid1DError::Mismatch(size, cells))
+                } else {
+                    Ok(Self {
+                        size,
+                        cells,
+                        phantom: PhantomData,
+                    })
+                },
+        }
+    }
+
+    /// Creates a new [`Grid1D`](crate::Grid1D)
+    /// or returns a [`Grid1DError`](Grid1DError).
+    pub fn new_mut<S: Into<Size<usize>>>(
+        size: S,
+        mut cells: Collection,
+    ) -> Result<Self, Grid1DError<Collection>>
+    where
+        Collection: AsMut<[Cell]>,
+    {
+        let size = size.into();
+
+        match size.width.checked_mul(size.height) {
+            None => Err(Grid1DError::Overflow(size, cells)),
+            Some(area) =>
+                if area != cells.as_mut().len() {
                     Err(Grid1DError::Mismatch(size, cells))
                 } else {
                     Ok(Self {
