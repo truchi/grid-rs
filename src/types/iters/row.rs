@@ -25,7 +25,8 @@ impl<'a, T: GridRef<'a> + ?Sized> RowHelper<'a, T> {
 
     /// Returns a [`RowHelper`](crate::RowHelper) without bounds checking.
     ///
-    /// See [`Grid::row_unchecked`](crate::Grid::row_unchecked) for safety.
+    /// See [`GridRef::row_unchecked`](crate::GridRef::row_unchecked) for
+    /// safety.
     pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
         let (row, range) = index.unchecked(grid.size().width);
 
