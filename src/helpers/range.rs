@@ -11,23 +11,26 @@ pub trait ToRange {
 
 impl<T: RangeBounds<usize>> ToRange for T {
     fn checked(self, len: usize) -> Option<Range<usize>> {
-        let Range { start, end } = match (self.start_bound(), self.end_bound()) {
-            (Included(start), Excluded(end)) => *start..*end,
-            (Included(start), Included(end)) => *start..end.checked_add(1)?,
-            (Included(start), Unbounded) => *start..len,
-            (Unbounded, Excluded(end)) => 0..*end,
-            (Unbounded, Included(end)) => 0..end.checked_add(1)?,
-            (Unbounded, Unbounded) => 0..len,
-            (Excluded(start), Excluded(end)) => start.checked_add(1)?..*end,
-            (Excluded(start), Included(end)) => start.checked_add(1)?..end.checked_add(1)?,
-            (Excluded(start), Unbounded) => start.checked_add(1)?..len,
-        };
-
-        // TODO move this into match arms for finer checks
-        if start <= end && end <= len {
-            Some(start..end)
-        } else {
-            None
+        match to_start_end(self)? {
+            (Start::Included(start), End::Excluded(end)) =>
+                if start <= end && end <= len {
+                    Some(start..end)
+                } else {
+                    None
+                },
+            (Start::Included(start), End::Unbounded) =>
+                if start <= len {
+                    Some(start..len)
+                } else {
+                    None
+                },
+            (Start::Unbounded, End::Excluded(end)) =>
+                if end <= len {
+                    Some(0..end)
+                } else {
+                    None
+                },
+            (Start::Unbounded, End::Unbounded) => Some(0..len),
         }
     }
 
@@ -44,6 +47,37 @@ impl<T: RangeBounds<usize>> ToRange for T {
             (Excluded(start), Unbounded) => start + 1..len,
         }
     }
+}
+
+enum Start {
+    Included(usize),
+    Unbounded,
+}
+
+enum End {
+    Excluded(usize),
+    Unbounded,
+}
+
+/// Converts `impl RangeBounds<usize>` into `(Start, End)`, or `None` if
+/// overflow.
+fn to_start_end(range: impl RangeBounds<usize>) -> Option<(Start, End)> {
+    Some(match (range.start_bound(), range.end_bound()) {
+        (Included(start), Excluded(end)) => (Start::Included(*start), End::Excluded(*end)),
+        (Included(start), Included(end)) =>
+            (Start::Included(*start), End::Excluded(end.checked_add(1)?)),
+        (Included(start), Unbounded) => (Start::Included(*start), End::Unbounded),
+        (Unbounded, Excluded(end)) => (Start::Unbounded, End::Excluded(*end)),
+        (Unbounded, Included(end)) => (Start::Unbounded, End::Excluded(end.checked_add(1)?)),
+        (Unbounded, Unbounded) => (Start::Unbounded, End::Unbounded),
+        (Excluded(start), Excluded(end)) =>
+            (Start::Included(start.checked_add(1)?), End::Excluded(*end)),
+        (Excluded(start), Included(end)) => (
+            Start::Included(start.checked_add(1)?),
+            End::Excluded(end.checked_add(1)?),
+        ),
+        (Excluded(start), Unbounded) => (Start::Included(start.checked_add(1)?), End::Unbounded),
+    })
 }
 
 #[cfg(test)]
