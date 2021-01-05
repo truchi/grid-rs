@@ -1,17 +1,24 @@
 use crate::*;
-use std::ops::Range;
+use std::{marker::PhantomData, ops::Range};
 
-/// Column iterator helper.
+/// Generic column iterator leveraging
+/// [`Grid::cell_unchecked`](crate::Grid::cell_unchecked).
+///
+/// @see also [`Row`](crate::Row).
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct ColHelper<'a, T: ?Sized> {
-    grid:  &'a T,
-    col:   usize,
-    range: Range<usize>,
+pub struct Col<I, T: Grid<I>> {
+    grid:    T,
+    col:     usize,
+    range:   Range<usize>,
+    phantom: PhantomData<I>,
 }
 
-impl<'a, T: GridRef<'a> + ?Sized> ColHelper<'a, T> {
-    /// Returns a [`ColHelper`](crate::ColHelper), or `None` if `col >= width`.
-    pub fn new(grid: &'a T, index: impl Index1D) -> Option<Self> {
+pub type ColRef<'a, I, T> = Col<&'a I, &'a T>;
+pub type ColMut<'a, I, T> = Col<&'a mut I, &'a mut T>;
+
+impl<I, T: Grid<I>> Col<I, T> {
+    /// Returns a [`Col`](crate::Col), or `None` if out of bounds.
+    fn new_owned(grid: T, index: impl Index1D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let (col, range) = index.checked(width, height)?;
 
@@ -20,22 +27,82 @@ impl<'a, T: GridRef<'a> + ?Sized> ColHelper<'a, T> {
         debug_assert!(col < width);
         debug_assert!(range.start <= range.end);
         debug_assert!(range.end <= height);
-        Some(unsafe { Self::new_unchecked(grid, (col, range)) })
+        Some(unsafe { Self::new_unchecked_owned(grid, (col, range)) })
     }
 
-    /// Returns a [`ColHelper`](crate::ColHelper) without bounds checking.
+    /// Returns a [`Col`](crate::Col), without bounds checking.
     ///
-    /// See [`GridRef::col_unchecked`](crate::GridRef::col_unchecked) for
-    /// safety.
-    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
+    /// Callers **MUST** ensure:
+    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    ///   non-overlapping references (for [`ColMut`](crate::ColMut))
+    /// - `col < width`
+    /// - `start <= end`
+    /// - `end <= height`
+    unsafe fn new_unchecked_owned(grid: T, index: impl Index1D) -> Self {
         let (col, range) = index.unchecked(grid.size().height);
 
-        Self { grid, col, range }
+        Self {
+            grid,
+            col,
+            range,
+            phantom: PhantomData,
+        }
     }
 }
 
-impl<'a, T: GridRef<'a>> Iterator for ColHelper<'a, T> {
-    type Item = &'a T::Cell;
+/// @see [`ColRef`](crate::ColRef).
+impl<'a, I, T> ColRef<'a, I, T>
+where
+    &'a T: Grid<&'a I>,
+{
+    /// Returns a [`ColRef`](crate::ColRef), or `None` if out of bounds.
+    pub fn new(grid: &'a T, index: impl Index1D) -> Option<Self> {
+        Col::new_owned(grid, index)
+    }
+
+    /// Returns a [`ColRef`](crate::ColRef), without bounds checking.
+    ///
+    /// Callers **MUST** ensure:
+    /// - `col < width`
+    /// - `start <= end`
+    /// - `end <= height`
+    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index1D) -> Self {
+        Col::new_unchecked_owned(grid, index)
+    }
+}
+
+/// @see [`ColMut`](crate::ColMut).
+impl<'a, I, T> ColMut<'a, I, T>
+where
+    &'a mut T: Grid<&'a mut I>,
+{
+    /// Returns a [`ColMut`](crate::ColMut), or `None` if out of bounds.
+    ///
+    /// Callers **MUST** ensure:
+    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    ///   non-overlapping references
+    pub unsafe fn new(grid: &'a mut T, index: impl Index1D) -> Option<Self> {
+        Col::new_owned(grid, index)
+    }
+
+    /// Returns a [`ColMut`](crate::ColMut), without bounds checking.
+    ///
+    /// Callers **MUST** ensure:
+    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    ///   non-overlapping references
+    /// - `col < width`
+    /// - `start <= end`
+    /// - `end <= height`
+    pub unsafe fn new_unchecked(grid: &'a mut T, index: impl Index1D) -> Self {
+        Col::new_unchecked_owned(grid, index)
+    }
+}
+
+impl<'a, I, T> Iterator for ColRef<'a, I, T>
+where
+    &'a T: Grid<&'a I>,
+{
+    type Item = &'a I;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Range { start, end } = self.range;
@@ -51,6 +118,40 @@ impl<'a, T: GridRef<'a>> Iterator for ColHelper<'a, T> {
             // constructors guaranty that:
             debug_assert!(point < self.grid.size());
             Some(unsafe { self.grid.cell_unchecked(point) })
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, I, T> Iterator for ColMut<'a, I, T>
+where
+    &'a mut T: Grid<&'a mut I>,
+{
+    type Item = &'a mut I;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let std::ops::Range { start, end } = self.range;
+
+        if start < end {
+            self.range.start += 1;
+            let point = Point {
+                x: self.col,
+                y: start,
+            };
+
+            // SAFETY:
+            // constructors guaranty that:
+            // cell_unchecked returns valid, non-overlapping references.
+            // Then, it is safe to extend grid's lifetime
+            let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
+
+            // SAFETY:
+            // constructors guaranty that:
+            debug_assert!(point < self.grid.size());
+            let cell = unsafe { grid.cell_unchecked(point) };
+
+            Some(cell)
         } else {
             None
         }

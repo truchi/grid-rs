@@ -1,15 +1,19 @@
 use crate::*;
-use std::ops::Range;
+use std::{marker::PhantomData, ops::Range};
 
-/// Rows iterator helper.
+/// Generic columns iterator leveraging
+/// [`Grid::col_unchecked`](crate::Grid::col_unchecked).
+///
+/// @see also [`Rows`](crate::Rows).
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct ColsHelper<'a, T: ?Sized> {
-    grid:  &'a T,
-    index: Point<Range<usize>>,
+pub struct Cols<I, T: Grid<I>> {
+    grid:    T,
+    index:   Point<Range<usize>>,
+    phantom: PhantomData<I>,
 }
 
-impl<'a, T: GridRef<'a> + ?Sized> ColsHelper<'a, T> {
-    pub fn new(grid: &'a T, index: impl Index2D) -> Option<Self> {
+impl<I, T: Grid<I>> Cols<I, T> {
+    pub fn new(grid: T, index: impl Index2D) -> Option<Self> {
         let (width, height) = grid.size().into();
         let Point { x, y } = index.checked(grid.size())?;
 
@@ -21,16 +25,20 @@ impl<'a, T: GridRef<'a> + ?Sized> ColsHelper<'a, T> {
         Some(unsafe { Self::new_unchecked(grid, (x, y)) })
     }
 
-    pub unsafe fn new_unchecked(grid: &'a T, index: impl Index2D) -> Self {
+    pub unsafe fn new_unchecked(grid: T, index: impl Index2D) -> Self {
+        let index = index.unchecked(grid.size());
+
         Self {
             grid,
-            index: index.unchecked(grid.size()),
+            index,
+            phantom: PhantomData,
         }
     }
 }
 
-impl<'a, T: GridRef<'a>> Iterator for ColsHelper<'a, T> {
-    type Item = T::Col;
+/*
+impl<I, T: Grid<I>> Iterator for Cols<I, T> {
+    type Item = <T as Grid<I>>::Col;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Range { start, end } = self.index.x;
@@ -45,3 +53,4 @@ impl<'a, T: GridRef<'a>> Iterator for ColsHelper<'a, T> {
         }
     }
 }
+*/
