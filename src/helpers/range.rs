@@ -23,6 +23,7 @@ impl<T: RangeBounds<usize>> ToRange for T {
             (Excluded(start), Unbounded) => start.checked_add(1)?..len,
         };
 
+        // TODO move this into match arms for finer checks
         if start <= end && end <= len {
             Some(start..end)
         } else {
