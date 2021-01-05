@@ -89,7 +89,7 @@ impl<'a, I, T> Iterator for RowsRef<'a, I, T>
 where
     &'a T: Grid<&'a I>,
 {
-    type Item = <&'a T as Grid<&'a I>>::Col;
+    type Item = <&'a T as Grid<&'a I>>::Row;
 
     fn next(&mut self) -> Option<Self::Item> {
         let Range { start, end } = self.index.x;
@@ -98,7 +98,7 @@ where
             self.index.x.start += 1;
 
             // SAFETY: constructors guaranty this is safe
-            Some(unsafe { self.grid.col_unchecked((start, self.index.y.clone())) })
+            Some(unsafe { self.grid.row_unchecked((start, self.index.y.clone())) })
         } else {
             None
         }
@@ -109,13 +109,13 @@ impl<'a, I, T> Iterator for RowsMut<'a, I, T>
 where
     &'a mut T: Grid<&'a mut I>,
 {
-    type Item = <&'a mut T as Grid<&'a mut I>>::Col;
+    type Item = <&'a mut T as Grid<&'a mut I>>::Row;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Range { start, end } = self.index.x;
+        let Range { start, end } = self.index.y;
 
         if start < end {
-            self.index.x.start += 1;
+            self.index.y.start += 1;
 
             // SAFETY:
             // row_mut_unchecked returns valid, non-overlapping references.
@@ -123,7 +123,7 @@ where
             let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
 
             // SAFETY: constructors guaranty this is safe
-            let it = unsafe { grid.col_unchecked((start, self.index.y.clone())) };
+            let it = unsafe { grid.row_unchecked((start, self.index.x.clone())) };
 
             Some(it)
         } else {

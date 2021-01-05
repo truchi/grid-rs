@@ -51,79 +51,73 @@ impl<Cell, Collection> ColMajor1D<Cell, Collection> {
     }
 }
 
-impl<Cell, Collection> Grid for ColMajor1D<Cell, Collection> {
-    type Cell = Cell;
-
-    fn size(&self) -> Size<usize> {
-        self.size
-    }
-}
-
-impl<'a, Cell: 'a, Collection: 'a + AsRef<[Cell]>> GridRef<'a> for ColMajor1D<Cell, Collection> {
-    type Cells = std::iter::Flatten<Self::Cols>;
+impl<'a, Cell, Collection: AsRef<[Cell]>> Grid<&'a Cell> for &'a ColMajor1D<Cell, Collection> {
     type Col = std::slice::Iter<'a, Cell>;
-    type Cols = ColsHelper<'a, Self>;
-    type Row = RowHelper<'a, Self>;
-    type Rows = RowsHelper<'a, Self>;
+    type Cols = ColsRef<'a, Cell, ColMajor1D<Cell, Collection>>;
+    type Items = std::iter::Flatten<Self::Cols>;
+    type Row = RowRef<'a, Cell, ColMajor1D<Cell, Collection>>;
+    type Rows = RowsRef<'a, Cell, ColMajor1D<Cell, Collection>>;
 
-    unsafe fn cell_unchecked(&self, point: Point<usize>) -> &Cell {
+    unsafe fn cell_unchecked(self, point: Point<usize>) -> &'a Cell {
         self.cells
             .as_ref()
             .get_unchecked(ColMajor::cell_unchecked(self.size, point))
     }
 
-    unsafe fn col_unchecked(&'a self, index: impl Index1D) -> Self::Col {
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
         self.get_col_unchecked(index).iter()
     }
 
-    unsafe fn row_unchecked(&'a self, index: impl Index1D) -> Self::Row {
-        RowHelper::new_unchecked(self, index)
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        RowRef::new_unchecked(self, index)
     }
 
-    unsafe fn cols_unchecked(&'a self, index: impl Index2D) -> Self::Cols {
-        ColsHelper::new_unchecked(self, index)
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+        ColsRef::new_unchecked(self, index)
     }
 
-    unsafe fn rows_unchecked(&'a self, index: impl Index2D) -> Self::Rows {
-        RowsHelper::new_unchecked(self, index)
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+        RowsRef::new_unchecked(self, index)
     }
 
-    unsafe fn cells_unchecked(&'a self, index: impl Index2D) -> Self::Cells {
+    unsafe fn cells_unchecked(self, index: impl Index2D) -> Self::Items {
         self.cols_unchecked(index).flatten()
     }
 }
 
-impl<'a, Cell: 'a, Collection: 'a + AsMut<[Cell]>> GridMut<'a> for ColMajor1D<Cell, Collection> {
-    type CellsMut = std::iter::Flatten<Self::ColsMut>;
-    type ColMut = std::slice::IterMut<'a, Cell>;
-    type ColsMut = ColsMutHelper<'a, Self>;
-    type RowMut = RowMutHelper<'a, Self>;
-    type RowsMut = RowsMutHelper<'a, Self>;
+impl<'a, Cell, Collection: AsMut<[Cell]>> Grid<&'a mut Cell>
+    for &'a mut ColMajor1D<Cell, Collection>
+{
+    type Col = std::slice::IterMut<'a, Cell>;
+    type Cols = ColsMut<'a, Cell, ColMajor1D<Cell, Collection>>;
+    type Items = std::iter::Flatten<Self::Cols>;
+    type Row = RowMut<'a, Cell, ColMajor1D<Cell, Collection>>;
+    type Rows = RowsMut<'a, Cell, ColMajor1D<Cell, Collection>>;
 
-    unsafe fn cell_unchecked_mut(&mut self, point: Point<usize>) -> &mut Cell {
+    unsafe fn cell_unchecked(self, point: Point<usize>) -> &'a mut Cell {
         self.cells
             .as_mut()
             .get_unchecked_mut(ColMajor::cell_unchecked(self.size, point))
     }
 
-    unsafe fn col_unchecked_mut(&'a mut self, index: impl Index1D) -> Self::ColMut {
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
         self.get_col_unchecked_mut(index).iter_mut()
     }
 
-    unsafe fn row_unchecked_mut(&'a mut self, index: impl Index1D) -> Self::RowMut {
-        RowMutHelper::new_unchecked(self, index)
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        RowMut::new_unchecked(self, index)
     }
 
-    unsafe fn cols_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::ColsMut {
-        ColsMutHelper::new_unchecked(self, index)
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+        ColsMut::new_unchecked(self, index)
     }
 
-    unsafe fn rows_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::RowsMut {
-        RowsMutHelper::new_unchecked(self, index)
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+        RowsMut::new_unchecked(self, index)
     }
 
-    unsafe fn cells_unchecked_mut(&'a mut self, index: impl Index2D) -> Self::CellsMut {
-        self.cols_unchecked_mut(index).flatten()
+    unsafe fn cells_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.cols_unchecked(index).flatten()
     }
 }
 

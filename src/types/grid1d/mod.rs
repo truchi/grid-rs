@@ -1,8 +1,8 @@
 mod col_major;
-mod row_major;
+// mod row_major;
 
 pub use col_major::*;
-pub use row_major::*;
+// pub use row_major::*;
 
 use crate::*;
 use std::{convert::TryFrom, marker::PhantomData};
@@ -109,6 +109,12 @@ impl<Major, Cell, Collection: AsRef<[Cell]>> AsRef<[Cell]> for Grid1D<Major, Cel
 impl<Major, Cell, Collection: AsMut<[Cell]>> AsMut<[Cell]> for Grid1D<Major, Cell, Collection> {
     fn as_mut(&mut self) -> &mut [Cell] {
         self.cells.as_mut()
+    }
+}
+
+impl<Major, Cell, Collection> WithSize for Grid1D<Major, Cell, Collection> {
+    fn size(&self) -> Size<usize> {
+        self.size
     }
 }
 
