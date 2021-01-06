@@ -117,3 +117,16 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut RowMajor1D<I, T> {
         self.rows_unchecked(index).flatten()
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use super::{super::tests::*, *};
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn grid() {
+        let (grid, expected) = row_1d((5, 3).into());
+
+        grid_ref(&grid, expected);
+    }
+}

@@ -95,47 +95,81 @@ pub mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    const DEBUG: bool = false;
-    const COLS: usize = 3;
-    const ROWS: usize = 2;
-    const LEN: usize = COLS * ROWS;
-
+    #[derive(Debug)]
     pub struct Expected {
-        cols:  [[usize; ROWS]; COLS],
-        rows:  [[usize; COLS]; ROWS],
-        items: [usize; LEN],
+        cols:  Vec<Vec<usize>>,
+        rows:  Vec<Vec<usize>>,
+        items: Vec<usize>,
     }
 
-    pub fn colmajor() -> (ColMajor1D<usize, [usize; LEN]>, Expected) {
-        assert!(COLS != 0, "COLS is 0");
-        assert!(ROWS != 0, "ROWS is 0");
+    impl Expected {
+        pub fn with_capacity(size: Size) -> Self {
+            let (width, height) = size.into();
 
-        let mut cols = [[0; ROWS]; COLS];
-        let mut rows = [[0; COLS]; ROWS];
-        let mut items = [0; LEN];
+            let mut cols = Vec::with_capacity(width);
+            let mut rows = Vec::with_capacity(height);
+            let items = Vec::with_capacity(width * height);
+
+            for _ in 0..width {
+                cols.push(Vec::with_capacity(height));
+            }
+
+            for _ in 0..height {
+                rows.push(Vec::with_capacity(width));
+            }
+
+            Self { cols, rows, items }
+        }
+    }
+
+    pub fn col_1d(size: Size) -> (ColMajor1D<usize, Vec<usize>>, Expected) {
+        let (width, height) = size.into();
+
+        let Expected {
+            mut cols,
+            mut rows,
+            mut items,
+        } = Expected::with_capacity(size);
 
         let mut i = 0;
-        for col in 0..COLS {
-            for row in 0..ROWS {
-                cols[col][row] = i;
-                rows[row][col] = i;
-                items[i] = i;
+        for col in 0..width {
+            for row in 0..height {
+                cols[col].push(i);
+                rows[row].push(i);
+                items.push(i);
 
                 i += 1;
             }
         }
 
-        if DEBUG {
-            println!("========= DEBUG =========");
-            dbg!(cols);
-            dbg!(rows);
-            dbg!(items);
-            println!("========= /DEBUG =========");
-            assert!(false);
+        (
+            ColMajor1D::<usize, Vec<usize>>::new(size, items.clone()).unwrap(),
+            Expected { cols, rows, items },
+        )
+    }
+
+    pub fn row_1d(size: Size) -> (RowMajor1D<usize, Vec<usize>>, Expected) {
+        let (width, height) = size.into();
+
+        let Expected {
+            mut cols,
+            mut rows,
+            mut items,
+        } = Expected::with_capacity(size);
+
+        let mut i = 0;
+        for row in 0..height {
+            for col in 0..width {
+                cols[col].push(i);
+                rows[row].push(i);
+                items.push(i);
+
+                i += 1;
+            }
         }
 
         (
-            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), items).unwrap(),
+            RowMajor1D::<usize, Vec<usize>>::new(size, items.clone()).unwrap(),
             Expected { cols, rows, items },
         )
     }
@@ -148,82 +182,56 @@ pub mod tests {
         it.map(|u| *u).collect()
     }
 
-    pub fn grid_ref<'a, T: Grid<Item = usize> + GridRef<'a>>(
-        grid: &'a T,
-        Expected { cols, rows, items }: Expected,
-    ) where
-        T::Item: 'a,
-    {
-        macro_rules! iters {
-            (
-                ($($args:tt)*) ($($expected:tt)*)
-                $unchecked:ident $checked:ident
-            ) => {
-                assert_eq!(collect(unsafe { grid.$unchecked($($args)*) }), $($expected)*[..]);
-                assert_eq!(collect(grid.$checked($($args)*).unwrap()), $($expected)*[..]);
-            };
-            (None $(($($none:tt)*))*) => { $(
-                assert!(grid.$($none)*.is_none());
-            )* };
-        }
-
-        for x in 0..COLS {
-            for y in 0..ROWS {
-                assert_eq!(unsafe { grid.item_unchecked((x, y).into()) }, &rows[y][x]);
-                assert_eq!(grid.item((x, y).into()).unwrap(), &rows[y][x]);
-            }
-        }
-
-        for i in 0..COLS {
-            iters!((i) (&cols[i]) col_unchecked col);
-        }
-
-        for i in 0..ROWS {
-            iters!((i) (&rows[i]) row_unchecked row);
-        }
-
-        iters!(((.., ..)) (&items) items_unchecked items);
-
-        iters!(None(col(COLS))(row(ROWS)));
-    }
-
-    pub fn grid_mut<T: Grid<Item = usize>>(grid: &mut T, Expected { cols, rows, items }: Expected)
+    pub fn grid_ref<'a, T>(grid: &'a T, Expected { cols, rows, items }: Expected)
     where
-        T: for<'a> GridMut<'a>,
+        &'a T: Grid<&'a usize>,
     {
-        macro_rules! iters {
-            (
-                ($($args:tt)*) ($($expected:tt)*)
-                $unchecked:ident $checked:ident
-            ) => {
-                assert_eq!(collect_mut(unsafe { grid.$unchecked($($args)*) }), $($expected)*[..]);
-                assert_eq!(collect_mut(grid.$checked($($args)*).unwrap()), $($expected)*[..]);
-            };
-            (None $(($($none:tt)*))*) => { $(
-                assert!(grid.$($none)*.is_none());
-            )* };
-        }
+        let (width, height) = grid.size().into();
 
-        for x in 0..COLS {
-            for y in 0..ROWS {
-                assert_eq!(
-                    unsafe { grid.item_unchecked_mut((x, y).into()) },
-                    &rows[y][x]
-                );
-                assert_eq!(grid.item_mut((x, y).into()).unwrap(), &rows[y][x]);
+        // ITEM
+        for x in 0..width {
+            for y in 0..height {
+                let point = (x, y).into();
+
+                assert_eq!(unsafe { grid.item_unchecked(point) }, &rows[y][x]);
+                assert_eq!(grid.item(point).unwrap(), &rows[y][x]);
             }
         }
 
-        for i in 0..COLS {
-            iters!((i) (&cols[i]) col_unchecked_mut col_mut);
+        // COL
+        for i in 0..width {
+            assert_eq!(collect(unsafe { grid.col_unchecked(i) }), &cols[i][..]);
+            assert_eq!(collect(grid.col(i).unwrap()), &cols[i][..]);
         }
 
-        for i in 0..ROWS {
-            iters!((i) (&rows[i]) row_unchecked_mut row_mut);
+        // ROW
+        for i in 0..height {
+            assert_eq!(collect(unsafe { grid.row_unchecked(i) }), &rows[i][..]);
+            assert_eq!(collect(grid.row(i).unwrap()), &rows[i][..]);
         }
 
-        iters!(((.., ..)) (&items) items_unchecked_mut items_mut);
+        // COLS
+        assert_eq!(
+            collect(unsafe { grid.cols_unchecked(()) }.flatten()),
+            collect(cols.iter().flatten()),
+        );
+        assert_eq!(
+            collect(grid.cols(()).unwrap().flatten()),
+            collect(cols.iter().flatten()),
+        );
 
-        iters!(None(col_mut(COLS))(row_mut(ROWS)));
+        // ROWS
+        assert_eq!(
+            collect(unsafe { grid.rows_unchecked(()) }.flatten()),
+            collect(rows.iter().flatten()),
+        );
+        assert_eq!(
+            collect(grid.rows(()).unwrap().flatten()),
+            collect(rows.iter().flatten()),
+        );
+
+        // ITEMS
+        assert_eq!(collect(unsafe { grid.items_unchecked(()) }), &items[..]);
+        assert_eq!(collect(grid.items(()).unwrap()), &items[..]);
     }
 }

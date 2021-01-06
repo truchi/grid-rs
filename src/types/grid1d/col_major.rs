@@ -119,113 +119,14 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut ColMajor1D<I, T> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
+pub mod tests {
+    use super::{super::tests::*, *};
     use pretty_assertions::assert_eq;
 
-    const DEBUG: bool = false;
-    const COLS: usize = 3;
-    const ROWS: usize = 2;
-    const LEN: usize = COLS * ROWS;
-
-    struct Expected {
-        cols:  [[usize; ROWS]; COLS],
-        rows:  [[usize; COLS]; ROWS],
-        items: [usize; LEN],
-    }
-
-    fn data() -> (ColMajor1D<usize, [usize; LEN]>, Expected) {
-        assert!(COLS != 0, "COLS is 0");
-        assert!(ROWS != 0, "ROWS is 0");
-
-        let mut cols = [[0; ROWS]; COLS];
-        let mut rows = [[0; COLS]; ROWS];
-        let mut items = [0; LEN];
-
-        let mut i = 0;
-        for col in 0..COLS {
-            for row in 0..ROWS {
-                cols[col][row] = i;
-                rows[row][col] = i;
-                items[i] = i;
-
-                i += 1;
-            }
-        }
-
-        if DEBUG {
-            println!("========= DEBUG =========");
-            dbg!(cols);
-            dbg!(rows);
-            dbg!(items);
-            println!("========= /DEBUG =========");
-            assert!(false);
-        }
-
-        (
-            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), items).unwrap(),
-            Expected { cols, rows, items },
-        )
-    }
-
     #[test]
-    fn slices() {
-        let (mut grid, Expected { mut cols, .. }) = data();
+    fn grid() {
+        let (grid, expected) = col_1d((5, 3).into());
 
-        for i in 0..COLS {
-            assert_eq!(unsafe { grid.get_col_unchecked(i) }, &cols[i][..]);
-            assert_eq!(unsafe { grid.get_col_unchecked_mut(i) }, &mut cols[i][..]);
-            assert_eq!(grid.get_col(i), Some(&cols[i][..]));
-            assert_eq!(grid.get_col_mut(i), Some(&mut cols[i][..]));
-        }
-        assert_eq!(grid.get_col(COLS), None);
-        assert_eq!(grid.get_col_mut(COLS), None);
-    }
-
-    #[test]
-    fn iters() {
-        let (mut grid, Expected { cols, rows, items }) = data();
-
-        fn collect<'a>(it: impl Iterator<Item = &'a usize>) -> Vec<usize> {
-            it.map(|u| *u).collect()
-        }
-
-        fn collect_mut<'a>(it: impl Iterator<Item = &'a mut usize>) -> Vec<usize> {
-            it.map(|u| *u).collect()
-        }
-
-        macro_rules! iters {
-            (
-                ($($args:tt)*) ($($expected:tt)*)
-                $unchecked:ident $unchecked_mut:ident $checked:ident $checked_mut:ident
-            ) => {
-                assert_eq!(collect(unsafe { grid.$unchecked($($args)*) }), $($expected)*[..]);
-                assert_eq!(collect_mut(unsafe { grid.$unchecked_mut($($args)*) }), $($expected)*[..]);
-                assert_eq!(collect(grid.$checked($($args)*).unwrap()), $($expected)*[..]);
-                assert_eq!(collect_mut(grid.$checked_mut($($args)*).unwrap()), $($expected)*[..]);
-            };
-            (None $(($($none:tt)*))*) => { $(
-                assert!(grid.$($none)*.is_none());
-            )* };
-        }
-
-        for x in 0..COLS {
-            for y in 0..ROWS {
-                assert_eq!(unsafe { grid.item_unchecked((x, y).into()) }, &rows[y][x]);
-                assert_eq!(grid.item((x, y).into()).unwrap(), &rows[y][x]);
-            }
-        }
-
-        for i in 0..COLS {
-            iters!((i) (&cols[i]) col_unchecked col_unchecked_mut col col_mut);
-        }
-
-        for i in 0..ROWS {
-            iters!((i) (&rows[i]) row_unchecked row_unchecked_mut row row_mut);
-        }
-
-        iters!(((.., ..)) (&items) items_unchecked items_unchecked_mut items items_mut);
-
-        iters!(None(col(COLS))(col_mut(COLS))(row(ROWS))(row_mut(ROWS)));
+        grid_ref(&grid, expected);
     }
 }
