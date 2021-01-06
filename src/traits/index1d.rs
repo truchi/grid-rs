@@ -7,7 +7,7 @@ pub trait Index1D {
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)>;
 
     /// Returns the index **without** bounds checking.
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>);
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>);
 }
 
 impl Index1D for usize {
@@ -19,8 +19,8 @@ impl Index1D for usize {
         }
     }
 
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
-        (self, 0..max_index)
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+        (self, 0..max_end)
     }
 }
 
@@ -35,8 +35,8 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
         }
     }
 
-    fn unchecked(self, max_index: usize) -> (usize, Range<usize>) {
-        (self.0, ToRange::unchecked(self.1, max_index))
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+        (self.0, ToRange::unchecked(self.1, max_end))
     }
 }
 
