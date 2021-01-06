@@ -118,7 +118,7 @@ where
             self.index.x.start += 1;
 
             // SAFETY:
-            // row_mut_unchecked returns valid, non-overlapping references.
+            // col_unchecked returns valid, non-overlapping references.
             // Then, it is safe to extend iterator's items lifetime
             let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
 
