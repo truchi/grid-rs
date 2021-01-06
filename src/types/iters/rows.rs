@@ -92,13 +92,13 @@ where
     type Item = <&'a T as Grid<&'a I>>::Row;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Range { start, end } = self.index.x;
+        let Range { start, end } = self.index.y;
 
         if start < end {
-            self.index.x.start += 1;
+            self.index.y.start += 1;
 
             // SAFETY: constructors guaranty this is safe
-            Some(unsafe { self.grid.row_unchecked((start, self.index.y.clone())) })
+            Some(unsafe { self.grid.row_unchecked((start, self.index.x.clone())) })
         } else {
             None
         }
