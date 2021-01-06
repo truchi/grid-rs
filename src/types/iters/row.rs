@@ -39,7 +39,7 @@ impl<I, T: Grid<I>> Row<I, T> {
     /// - `start <= end`
     /// - `end <= height`
     unsafe fn new_unchecked_owned(grid: T, index: impl Index1D) -> Self {
-        let (row, range) = index.unchecked(grid.size().height);
+        let (row, range) = index.unchecked(grid.size().width);
 
         Self {
             grid,
