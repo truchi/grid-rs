@@ -28,7 +28,6 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         let (i, range) = self;
 
-        // TODO move checked()? before if for compiler optimisations
         if i < max_index {
             Some((i, ToRange::checked(range, max_end)?))
         } else {
