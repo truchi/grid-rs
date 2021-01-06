@@ -125,8 +125,9 @@ pub mod tests {
 
     #[test]
     fn grid() {
-        let (grid, expected) = col_1d((5, 3).into());
+        let (mut grid, expected) = col_1d((5, 3).into());
 
-        grid_ref(&grid, expected);
+        grid_ref(&grid, expected.clone());
+        grid_mut(&mut grid, expected);
     }
 }
