@@ -1,11 +1,11 @@
 mod col_major;
-// mod row_major;
+mod row_major;
 
 pub use col_major::*;
-// pub use row_major::*;
+pub use row_major::*;
 
 use crate::*;
-use std::{convert::TryFrom, marker::PhantomData};
+use std::marker::PhantomData;
 
 /// Error type for [`Grid1D`](crate::Grid1D) constructors.
 #[derive(Copy, Clone, Debug)]
@@ -21,34 +21,29 @@ pub enum Grid1DError<T> {
 /// @see [`ColMajor1D`](crate::ColMajor1D) and
 /// [`RowMajor1D`](crate::RowMajor1D).
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Grid1D<Major, Cell, Collection> {
-    phantom: PhantomData<(Major, Cell)>,
-    size:    Size<usize>,
-    cells:   Collection,
+pub struct Grid1D<M, I, T> {
+    size:    M,
+    items:   T,
+    phantom: PhantomData<I>,
 }
 
 /// ### Constructors
-impl<Major, Cell, Collection> Grid1D<Major, Cell, Collection> {
+impl<M: Major, I, T> Grid1D<M, I, T> {
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
-    pub fn new<S: Into<Size<usize>>>(
-        size: S,
-        cells: Collection,
-    ) -> Result<Self, Grid1DError<Collection>>
+    pub fn new(size: Size<usize>, items: T) -> Result<Self, Grid1DError<T>>
     where
-        Collection: AsRef<[Cell]>,
+        T: AsRef<[I]>,
     {
-        let size = size.into();
-
         match size.width.checked_mul(size.height) {
-            None => Err(Grid1DError::Overflow(size, cells)),
-            Some(area) =>
-                if area != cells.as_ref().len() {
-                    Err(Grid1DError::Mismatch(size, cells))
+            None => Err(Grid1DError::Overflow(size, items)),
+            Some(len) =>
+                if len != items.as_ref().len() {
+                    Err(Grid1DError::Mismatch(size, items))
                 } else {
                     Ok(Self {
-                        size,
-                        cells,
+                        size: size.into(),
+                        items,
                         phantom: PhantomData,
                     })
                 },
@@ -57,24 +52,19 @@ impl<Major, Cell, Collection> Grid1D<Major, Cell, Collection> {
 
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
-    pub fn new_mut<S: Into<Size<usize>>>(
-        size: S,
-        mut cells: Collection,
-    ) -> Result<Self, Grid1DError<Collection>>
+    pub fn new_mut(size: Size<usize>, mut items: T) -> Result<Self, Grid1DError<T>>
     where
-        Collection: AsMut<[Cell]>,
+        T: AsMut<[I]>,
     {
-        let size = size.into();
-
         match size.width.checked_mul(size.height) {
-            None => Err(Grid1DError::Overflow(size, cells)),
-            Some(area) =>
-                if area != cells.as_mut().len() {
-                    Err(Grid1DError::Mismatch(size, cells))
+            None => Err(Grid1DError::Overflow(size, items)),
+            Some(len) =>
+                if len != items.as_mut().len() {
+                    Err(Grid1DError::Mismatch(size, items))
                 } else {
                     Ok(Self {
-                        size,
-                        cells,
+                        size: size.into(),
+                        items,
                         phantom: PhantomData,
                     })
                 },
@@ -82,39 +72,21 @@ impl<Major, Cell, Collection> Grid1D<Major, Cell, Collection> {
     }
 }
 
-/// ### Methods
-impl<Major, Cell, Collection: AsRef<[Cell]>> Grid1D<Major, Cell, Collection> {
-    /// Returns the [`Size`](crate::Size).
-    pub fn size(&self) -> Size<usize> {
-        self.size
+impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Grid1D<M, I, T> {
+    fn as_ref(&self) -> &[I] {
+        self.items.as_ref()
     }
 }
 
-impl<Major, Cell, Collection: AsRef<[Cell]>, S: Into<Size<usize>>> TryFrom<(S, Collection)>
-    for Grid1D<Major, Cell, Collection>
-{
-    type Error = Grid1DError<Collection>;
-
-    fn try_from((size, cells): (S, Collection)) -> Result<Self, Self::Error> {
-        Self::new(size, cells)
+impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Grid1D<M, I, T> {
+    fn as_mut(&mut self) -> &mut [I] {
+        self.items.as_mut()
     }
 }
 
-impl<Major, Cell, Collection: AsRef<[Cell]>> AsRef<[Cell]> for Grid1D<Major, Cell, Collection> {
-    fn as_ref(&self) -> &[Cell] {
-        self.cells.as_ref()
-    }
-}
-
-impl<Major, Cell, Collection: AsMut<[Cell]>> AsMut<[Cell]> for Grid1D<Major, Cell, Collection> {
-    fn as_mut(&mut self) -> &mut [Cell] {
-        self.cells.as_mut()
-    }
-}
-
-impl<Major, Cell, Collection> WithSize for Grid1D<Major, Cell, Collection> {
+impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
     fn size(&self) -> Size<usize> {
-        self.size
+        self.size.into()
     }
 }
 
