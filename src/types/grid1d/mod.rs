@@ -11,9 +11,9 @@ use std::marker::PhantomData;
 #[derive(Copy, Clone, Debug)]
 pub enum Grid1DError<T> {
     /// `width * height > usize::MAX`.
-    Overflow(Size, T),
+    Overflow(T),
     /// `width * height != len`.
-    Mismatch(Size, T),
+    Mismatch(T),
 }
 
 /// 2D [`Grid1D`](crate::Grid1D).
@@ -29,6 +29,15 @@ pub struct Grid1D<M, I, T> {
 
 /// ### Constructors
 impl<M: Major, I, T> Grid1D<M, I, T> {
+    /// Creates a new [`Grid1D`](crate::Grid1D), without errors checking.
+    pub fn new_unchecked(size: Size, items: T) -> Self {
+        Self {
+            size: size.into(),
+            items,
+            phantom: PhantomData,
+        }
+    }
+
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
     pub fn new(size: Size, items: T) -> Result<Self, Grid1DError<T>>
@@ -36,37 +45,12 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
         T: AsRef<[I]>,
     {
         match size.width.checked_mul(size.height) {
-            None => Err(Grid1DError::Overflow(size, items)),
+            None => Err(Grid1DError::Overflow(items)),
             Some(len) =>
                 if len != items.as_ref().len() {
-                    Err(Grid1DError::Mismatch(size, items))
+                    Err(Grid1DError::Mismatch(items))
                 } else {
-                    Ok(Self {
-                        size: size.into(),
-                        items,
-                        phantom: PhantomData,
-                    })
-                },
-        }
-    }
-
-    /// Creates a new [`Grid1D`](crate::Grid1D)
-    /// or returns a [`Grid1DError`](Grid1DError).
-    pub fn new_mut(size: Size, mut items: T) -> Result<Self, Grid1DError<T>>
-    where
-        T: AsMut<[I]>,
-    {
-        match size.width.checked_mul(size.height) {
-            None => Err(Grid1DError::Overflow(size, items)),
-            Some(len) =>
-                if len != items.as_mut().len() {
-                    Err(Grid1DError::Mismatch(size, items))
-                } else {
-                    Ok(Self {
-                        size: size.into(),
-                        items,
-                        phantom: PhantomData,
-                    })
+                    Ok(Self::new_unchecked(size, items))
                 },
         }
     }
