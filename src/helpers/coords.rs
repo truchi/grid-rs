@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 macro_rules! coords {
     ($(
         $(#[$TMeta:meta])*
-        $type:ident: $Type:ident ($as:ident $As:ident $a:ident: $A:ident $b:ident: $B:ident)
+        $type:ident: $Type:ident ($As:ident $a:ident: $A:ident $b:ident: $B:ident)
         $(#[$XMeta:meta])* $x:ident: $X:ident
         $(#[$YMeta:meta])* $y:ident: $Y:ident
     )*) => { $(
@@ -24,19 +24,6 @@ macro_rules! coords {
             {
                 $Type { $x: self.$x.into(), $y: self.$y.into() }
             }
-
-            doc!("Converts to [`" stringify!($As) "`](crate::" stringify!($As) ").",
-            pub fn $as<$A, $B>(self) -> $As<$A, $B>
-            where
-                $X: Into<$A>,
-                $Y: Into<$B>,
-            {
-                $As { $a: self.$x.into(), $b: self.$y.into() }
-            });
-        }
-
-        impl<T: Clone> From<T> for $Type<T> {
-            fn from(value: T) -> Self { Self { $x: value.clone(), $y: value } }
         }
 
         impl<$X, $Y> From<($X, $Y)> for $Type<$X, $Y> {
@@ -44,7 +31,11 @@ macro_rules! coords {
         }
 
         impl<$X, $Y> From<$Type<$X, $Y>> for ($X, $Y) {
-            fn from($type: $Type<$X, $Y>) -> Self { ($type.$x, $type.$y) }
+            fn from($Type { $x, $y }: $Type<$X, $Y>) -> Self { ($x, $y) }
+        }
+
+        impl<$X, $Y, $A: Into<$X>, $B: Into<$Y>> From<$As<$A, $B>> for $Type<$X, $Y> {
+            fn from($As { $a, $b }: $As<$A, $B>) -> Self { Self { $x: $a.into(), $y: $b.into() } }
         }
 
         impl<$A, $B, $X: PartialEq<$A>, $Y: PartialEq<$B>> PartialEq<$As<$A, $B>> for $Type<$X, $Y> {
@@ -75,13 +66,13 @@ macro_rules! coords {
 
 coords!(
     /// A `x`, `y` [`Point`](crate::Point).
-    point: Point (as_size Size width: W height: H)
+    point: Point (Size width: W height: H)
         /// X axis `x` component.
         x: X
         /// Y axis `y` component.
         y: Y
     /// A `width`, `height` [`Size`](crate::Size).
-    size: Size (as_point Point x: X y: Y)
+    size: Size (Point x: X y: Y)
         /// X axis `width` component.
         width: W
         /// Y axis `height` component.

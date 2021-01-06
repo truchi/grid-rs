@@ -26,7 +26,7 @@ pub trait Major: From<Size<usize>> + Into<Size<usize>> + Copy {
 
     /// Returns the index at `point`, without checking bounds.
     fn index_unchecked(self, point: Point<usize>) -> usize {
-        let point = Self::from(point.as_size());
+        let point = Self::from(point.into());
 
         point.minor() * self.major() + point.major()
     }
@@ -44,7 +44,7 @@ pub trait Major: From<Size<usize>> + Into<Size<usize>> + Copy {
     fn range_unchecked(self, index: impl Index1D) -> Range<usize> {
         let (i, Range { start, end }) = index.unchecked(self.major());
 
-        let point = Self::new(start, i).into().as_point();
+        let point = Self::new(start, i).into().into();
         let start = self.index_unchecked(point);
 
         start..start + end
