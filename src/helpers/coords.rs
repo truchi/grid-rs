@@ -14,18 +14,6 @@ macro_rules! coords {
             $(#[$YMeta])* pub $y: $Y,
         }
 
-        /// ### Convertions
-        impl<$X, $Y> $Type<$X, $Y> {
-            /// Converts to other units.
-            pub fn to<T, U>(self) -> $Type<T, U>
-            where
-                $X: Into<T>,
-                $Y: Into<U>,
-            {
-                $Type { $x: self.$x.into(), $y: self.$y.into() }
-            }
-        }
-
         impl<$X, $Y> From<($X, $Y)> for $Type<$X, $Y> {
             fn from(($x, $y): ($X, $Y)) -> Self { Self { $x, $y } }
         }
