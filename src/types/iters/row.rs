@@ -6,7 +6,7 @@ use std::{marker::PhantomData, ops::Range};
 ///
 /// @see also [`Col`](crate::Col).
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct Row<I, T: Grid<I>> {
+pub struct Row<I, T> {
     grid:    T,
     row:     usize,
     range:   Range<usize>,
