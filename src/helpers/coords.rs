@@ -9,7 +9,7 @@ macro_rules! coords {
     )*) => { $(
         $(#[$TMeta])*
         #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
-        pub struct $Type<$X, $Y = $X> {
+        pub struct $Type<$X = usize, $Y = $X> {
             $(#[$XMeta])* pub $x: $X,
             $(#[$YMeta])* pub $y: $Y,
         }

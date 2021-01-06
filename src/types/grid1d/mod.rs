@@ -11,9 +11,9 @@ use std::marker::PhantomData;
 #[derive(Copy, Clone, Debug)]
 pub enum Grid1DError<T> {
     /// `width * height > usize::MAX`.
-    Overflow(Size<usize>, T),
+    Overflow(Size, T),
     /// `width * height != len`.
-    Mismatch(Size<usize>, T),
+    Mismatch(Size, T),
 }
 
 /// 2D [`Grid1D`](crate::Grid1D).
@@ -31,7 +31,7 @@ pub struct Grid1D<M, I, T> {
 impl<M: Major, I, T> Grid1D<M, I, T> {
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
-    pub fn new(size: Size<usize>, items: T) -> Result<Self, Grid1DError<T>>
+    pub fn new(size: Size, items: T) -> Result<Self, Grid1DError<T>>
     where
         T: AsRef<[I]>,
     {
@@ -52,7 +52,7 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
 
     /// Creates a new [`Grid1D`](crate::Grid1D)
     /// or returns a [`Grid1DError`](Grid1DError).
-    pub fn new_mut(size: Size<usize>, mut items: T) -> Result<Self, Grid1DError<T>>
+    pub fn new_mut(size: Size, mut items: T) -> Result<Self, Grid1DError<T>>
     where
         T: AsMut<[I]>,
     {
@@ -85,7 +85,7 @@ impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Grid1D<M, I, T> {
 }
 
 impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
-    fn size(&self) -> Size<usize> {
+    fn size(&self) -> Size {
         self.size.into()
     }
 }

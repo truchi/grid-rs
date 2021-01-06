@@ -20,7 +20,7 @@ pub trait Grid<Item>: WithSize + Sized {
     ///
     /// Callers **MUST** ensure:
     /// - `point < size`
-    unsafe fn item_unchecked(self, point: Point<usize>) -> Item;
+    unsafe fn item_unchecked(self, point: Point) -> Item;
 
     /// Returns an iterator over items at column `index`, without bounds
     /// checking.
@@ -61,7 +61,7 @@ pub trait Grid<Item>: WithSize + Sized {
     unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
 
     /// Returns the item at `point`, or `None` if `point >= size`.
-    fn item(self, point: Point<usize>) -> Option<Item> {
+    fn item(self, point: Point) -> Option<Item> {
         if point < self.size() {
             // SAFETY:
             // point < size

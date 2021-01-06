@@ -3,7 +3,7 @@ use std::ops::Range;
 
 /// Trait for [`ColMajor`](crate::ColMajor) and [`RowMajor`](crate::RowMajor)
 /// [`Size`](crate::Size)s of [`Grid1D`](crate::Grid1D)s.
-pub trait Major: From<Size<usize>> + Into<Size<usize>> + Copy {
+pub trait Major: From<Size> + Into<Size> + Copy {
     /// Returns a new `Self` from the lengths of the major axis `major`
     /// and minor axis `minor`.
     fn new(major: usize, minor: usize) -> Self;
@@ -16,7 +16,7 @@ pub trait Major: From<Size<usize>> + Into<Size<usize>> + Copy {
 
     /// Returns the index at `point` if `point < size`,
     /// `None` otherwise.
-    fn index(self, point: Point<usize>) -> Option<usize> {
+    fn index(self, point: Point) -> Option<usize> {
         if point < self.into() {
             Some(self.index_unchecked(point))
         } else {
@@ -25,7 +25,7 @@ pub trait Major: From<Size<usize>> + Into<Size<usize>> + Copy {
     }
 
     /// Returns the index at `point`, without checking bounds.
-    fn index_unchecked(self, point: Point<usize>) -> usize {
+    fn index_unchecked(self, point: Point) -> usize {
         let point = Self::from(point.into());
 
         point.minor() * self.major() + point.major()
@@ -60,13 +60,13 @@ macro_rules! majors {
             pub height: usize,
         }
 
-        impl From<Size<usize>> for $Major {
-            fn from(Size { width, height }: Size<usize>) -> Self {
+        impl From<Size> for $Major {
+            fn from(Size { width, height }: Size) -> Self {
                 Self { width, height }
             }
         }
 
-        impl From<$Major> for Size<usize> {
+        impl From<$Major> for Size {
             fn from($Major { width, height }: $Major) -> Self {
                 Self { width, height }
             }

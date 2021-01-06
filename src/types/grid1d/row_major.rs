@@ -58,7 +58,7 @@ impl<'a, I, T: AsRef<[I]>> Grid<&'a I> for &'a RowMajor1D<I, T> {
     type Row = std::slice::Iter<'a, I>;
     type Rows = RowsRef<'a, I, RowMajor1D<I, T>>;
 
-    unsafe fn item_unchecked(self, point: Point<usize>) -> &'a I {
+    unsafe fn item_unchecked(self, point: Point) -> &'a I {
         self.as_ref()
             .get_unchecked(self.size.index_unchecked(point))
     }
@@ -91,7 +91,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut RowMajor1D<I, T> {
     type Row = std::slice::IterMut<'a, I>;
     type Rows = RowsMut<'a, I, RowMajor1D<I, T>>;
 
-    unsafe fn item_unchecked(self, point: Point<usize>) -> &'a mut I {
+    unsafe fn item_unchecked(self, point: Point) -> &'a mut I {
         self.items
             .as_mut()
             .get_unchecked_mut(self.size.index_unchecked(point))
