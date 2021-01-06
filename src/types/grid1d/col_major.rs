@@ -10,13 +10,13 @@ impl<I, T> ColMajor1D<I, T> {
         T: AsRef<[I]>,
     {
         let range = self.size.range(index)?;
-        let cells = self.as_ref();
+        let items = self.as_ref();
 
         // SAFETY:
         // Major::range does the bounds checking
         debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= cells.len());
-        Some(unsafe { cells.get_unchecked(range) })
+        debug_assert!(range.end <= items.len());
+        Some(unsafe { items.get_unchecked(range) })
     }
 
     pub unsafe fn col_unchecked(&self, index: impl Index1D) -> &[I]
@@ -32,13 +32,13 @@ impl<I, T> ColMajor1D<I, T> {
         T: AsMut<[I]>,
     {
         let range = self.size.range(index)?;
-        let cells = self.as_mut();
+        let items = self.as_mut();
 
         // SAFETY:
         // Major::range does the bounds checking
         debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= cells.len());
-        Some(unsafe { cells.get_unchecked_mut(range) })
+        debug_assert!(range.end <= items.len());
+        Some(unsafe { items.get_unchecked_mut(range) })
     }
 
     pub unsafe fn col_unchecked_mut(&mut self, index: impl Index1D) -> &mut [I]
@@ -58,7 +58,7 @@ impl<'a, I, T: AsRef<[I]>> Grid<&'a I> for &'a ColMajor1D<I, T> {
     type Row = RowRef<'a, I, ColMajor1D<I, T>>;
     type Rows = RowsRef<'a, I, ColMajor1D<I, T>>;
 
-    unsafe fn cell_unchecked(self, point: Point<usize>) -> &'a I {
+    unsafe fn item_unchecked(self, point: Point<usize>) -> &'a I {
         self.as_ref()
             .get_unchecked(self.size.index_unchecked(point))
     }
@@ -79,7 +79,7 @@ impl<'a, I, T: AsRef<[I]>> Grid<&'a I> for &'a ColMajor1D<I, T> {
         RowsRef::new_unchecked(self, index)
     }
 
-    unsafe fn cells_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
         self.cols_unchecked(index).flatten()
     }
 }
@@ -91,7 +91,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut ColMajor1D<I, T> {
     type Row = RowMut<'a, I, ColMajor1D<I, T>>;
     type Rows = RowsMut<'a, I, ColMajor1D<I, T>>;
 
-    unsafe fn cell_unchecked(self, point: Point<usize>) -> &'a mut I {
+    unsafe fn item_unchecked(self, point: Point<usize>) -> &'a mut I {
         self.items
             .as_mut()
             .get_unchecked_mut(self.size.index_unchecked(point))
@@ -113,7 +113,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut ColMajor1D<I, T> {
         RowsMut::new_unchecked(self, index)
     }
 
-    unsafe fn cells_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
         self.cols_unchecked(index).flatten()
     }
 }
@@ -131,7 +131,7 @@ mod tests {
     struct Expected {
         cols:  [[usize; ROWS]; COLS],
         rows:  [[usize; COLS]; ROWS],
-        cells: [usize; LEN],
+        items: [usize; LEN],
     }
 
     fn data() -> (ColMajor1D<usize, [usize; LEN]>, Expected) {
@@ -140,14 +140,14 @@ mod tests {
 
         let mut cols = [[0; ROWS]; COLS];
         let mut rows = [[0; COLS]; ROWS];
-        let mut cells = [0; LEN];
+        let mut items = [0; LEN];
 
         let mut i = 0;
         for col in 0..COLS {
             for row in 0..ROWS {
                 cols[col][row] = i;
                 rows[row][col] = i;
-                cells[i] = i;
+                items[i] = i;
 
                 i += 1;
             }
@@ -157,14 +157,14 @@ mod tests {
             println!("========= DEBUG =========");
             dbg!(cols);
             dbg!(rows);
-            dbg!(cells);
+            dbg!(items);
             println!("========= /DEBUG =========");
             assert!(false);
         }
 
         (
-            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), cells).unwrap(),
-            Expected { cols, rows, cells },
+            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), items).unwrap(),
+            Expected { cols, rows, items },
         )
     }
 
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn iters() {
-        let (mut grid, Expected { cols, rows, cells }) = data();
+        let (mut grid, Expected { cols, rows, items }) = data();
 
         fn collect<'a>(it: impl Iterator<Item = &'a usize>) -> Vec<usize> {
             it.map(|u| *u).collect()
@@ -211,8 +211,8 @@ mod tests {
 
         for x in 0..COLS {
             for y in 0..ROWS {
-                assert_eq!(unsafe { grid.cell_unchecked((x, y).into()) }, &rows[y][x]);
-                assert_eq!(grid.cell((x, y).into()).unwrap(), &rows[y][x]);
+                assert_eq!(unsafe { grid.item_unchecked((x, y).into()) }, &rows[y][x]);
+                assert_eq!(grid.item((x, y).into()).unwrap(), &rows[y][x]);
             }
         }
 
@@ -224,7 +224,7 @@ mod tests {
             iters!((i) (&rows[i]) row_unchecked row_unchecked_mut row row_mut);
         }
 
-        iters!(((.., ..)) (&cells) cells_unchecked cells_unchecked_mut cells cells_mut);
+        iters!(((.., ..)) (&items) items_unchecked items_unchecked_mut items items_mut);
 
         iters!(None(col(COLS))(col_mut(COLS))(row(ROWS))(row_mut(ROWS)));
     }

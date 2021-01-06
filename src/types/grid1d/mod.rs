@@ -103,7 +103,7 @@ pub mod tests {
     pub struct Expected {
         cols:  [[usize; ROWS]; COLS],
         rows:  [[usize; COLS]; ROWS],
-        cells: [usize; LEN],
+        items: [usize; LEN],
     }
 
     pub fn colmajor() -> (ColMajor1D<usize, [usize; LEN]>, Expected) {
@@ -112,14 +112,14 @@ pub mod tests {
 
         let mut cols = [[0; ROWS]; COLS];
         let mut rows = [[0; COLS]; ROWS];
-        let mut cells = [0; LEN];
+        let mut items = [0; LEN];
 
         let mut i = 0;
         for col in 0..COLS {
             for row in 0..ROWS {
                 cols[col][row] = i;
                 rows[row][col] = i;
-                cells[i] = i;
+                items[i] = i;
 
                 i += 1;
             }
@@ -129,14 +129,14 @@ pub mod tests {
             println!("========= DEBUG =========");
             dbg!(cols);
             dbg!(rows);
-            dbg!(cells);
+            dbg!(items);
             println!("========= /DEBUG =========");
             assert!(false);
         }
 
         (
-            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), cells).unwrap(),
-            Expected { cols, rows, cells },
+            Grid1D::<ColMajor, usize, [usize; LEN]>::new((COLS, ROWS), items).unwrap(),
+            Expected { cols, rows, items },
         )
     }
 
@@ -148,11 +148,11 @@ pub mod tests {
         it.map(|u| *u).collect()
     }
 
-    pub fn grid_ref<'a, T: Grid<Cell = usize> + GridRef<'a>>(
+    pub fn grid_ref<'a, T: Grid<Item = usize> + GridRef<'a>>(
         grid: &'a T,
-        Expected { cols, rows, cells }: Expected,
+        Expected { cols, rows, items }: Expected,
     ) where
-        T::Cell: 'a,
+        T::Item: 'a,
     {
         macro_rules! iters {
             (
@@ -169,8 +169,8 @@ pub mod tests {
 
         for x in 0..COLS {
             for y in 0..ROWS {
-                assert_eq!(unsafe { grid.cell_unchecked((x, y).into()) }, &rows[y][x]);
-                assert_eq!(grid.cell((x, y).into()).unwrap(), &rows[y][x]);
+                assert_eq!(unsafe { grid.item_unchecked((x, y).into()) }, &rows[y][x]);
+                assert_eq!(grid.item((x, y).into()).unwrap(), &rows[y][x]);
             }
         }
 
@@ -182,12 +182,12 @@ pub mod tests {
             iters!((i) (&rows[i]) row_unchecked row);
         }
 
-        iters!(((.., ..)) (&cells) cells_unchecked cells);
+        iters!(((.., ..)) (&items) items_unchecked items);
 
         iters!(None(col(COLS))(row(ROWS)));
     }
 
-    pub fn grid_mut<T: Grid<Cell = usize>>(grid: &mut T, Expected { cols, rows, cells }: Expected)
+    pub fn grid_mut<T: Grid<Item = usize>>(grid: &mut T, Expected { cols, rows, items }: Expected)
     where
         T: for<'a> GridMut<'a>,
     {
@@ -207,10 +207,10 @@ pub mod tests {
         for x in 0..COLS {
             for y in 0..ROWS {
                 assert_eq!(
-                    unsafe { grid.cell_unchecked_mut((x, y).into()) },
+                    unsafe { grid.item_unchecked_mut((x, y).into()) },
                     &rows[y][x]
                 );
-                assert_eq!(grid.cell_mut((x, y).into()).unwrap(), &rows[y][x]);
+                assert_eq!(grid.item_mut((x, y).into()).unwrap(), &rows[y][x]);
             }
         }
 
@@ -222,7 +222,7 @@ pub mod tests {
             iters!((i) (&rows[i]) row_unchecked_mut row_mut);
         }
 
-        iters!(((.., ..)) (&cells) cells_unchecked_mut cells_mut);
+        iters!(((.., ..)) (&items) items_unchecked_mut items_mut);
 
         iters!(None(col_mut(COLS))(row_mut(ROWS)));
     }

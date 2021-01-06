@@ -20,7 +20,7 @@ pub trait Grid<Item>: WithSize + Sized {
     ///
     /// Callers **MUST** ensure:
     /// - `point < size`
-    unsafe fn cell_unchecked(self, point: Point<usize>) -> Item;
+    unsafe fn item_unchecked(self, point: Point<usize>) -> Item;
 
     /// Returns an iterator over items at column `index`, without bounds
     /// checking.
@@ -58,14 +58,14 @@ pub trait Grid<Item>: WithSize + Sized {
     /// Callers **MUST** ensure:
     /// - `start <= end` (both ranges)
     /// - `end <= len` (both axis)
-    unsafe fn cells_unchecked(self, index: impl Index2D) -> Self::Items;
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
 
     /// Returns the item at `point`, or `None` if `point >= size`.
-    fn cell(self, point: Point<usize>) -> Option<Item> {
+    fn item(self, point: Point<usize>) -> Option<Item> {
         if point < self.size() {
             // SAFETY:
             // point < size
-            Some(unsafe { self.cell_unchecked(point) })
+            Some(unsafe { self.item_unchecked(point) })
         } else {
             None
         }
@@ -131,7 +131,7 @@ pub trait Grid<Item>: WithSize + Sized {
 
     /// Returns an iterator over items at `index`,
     /// or `None` if out of bounds.
-    fn cells(self, index: impl Index2D) -> Option<Self::Items> {
+    fn items(self, index: impl Index2D) -> Option<Self::Items> {
         let (width, height) = self.size().into();
         let Point { x, y } = index.checked(self.size())?;
 
@@ -141,6 +141,6 @@ pub trait Grid<Item>: WithSize + Sized {
         debug_assert!(y.start <= y.end);
         debug_assert!(x.end <= width);
         debug_assert!(y.end <= height);
-        Some(unsafe { self.cells_unchecked((x, y)) })
+        Some(unsafe { self.items_unchecked((x, y)) })
     }
 }

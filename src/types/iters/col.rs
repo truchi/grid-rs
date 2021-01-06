@@ -2,7 +2,7 @@ use crate::*;
 use std::{marker::PhantomData, ops::Range};
 
 /// Generic column iterator leveraging
-/// [`Grid::cell_unchecked`](crate::Grid::cell_unchecked).
+/// [`Grid::item_unchecked`](crate::Grid::item_unchecked).
 ///
 /// @see also [`Row`](crate::Row).
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -33,7 +33,7 @@ impl<I, T: Grid<I>> Col<I, T> {
     /// Returns a [`Col`](crate::Col), without bounds checking.
     ///
     /// Callers **MUST** ensure:
-    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    /// - [`Grid::item_unchecked`](crate::Grid::item_unchecked) returns
     ///   non-overlapping references (for [`ColMut`](crate::ColMut))
     /// - `col < width`
     /// - `start <= end`
@@ -79,7 +79,7 @@ where
     /// Returns a [`ColMut`](crate::ColMut), or `None` if out of bounds.
     ///
     /// Callers **MUST** ensure:
-    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    /// - [`Grid::item_unchecked`](crate::Grid::item_unchecked) returns
     ///   non-overlapping references
     pub unsafe fn new(grid: &'a mut T, index: impl Index1D) -> Option<Self> {
         Col::new_owned(grid, index)
@@ -88,7 +88,7 @@ where
     /// Returns a [`ColMut`](crate::ColMut), without bounds checking.
     ///
     /// Callers **MUST** ensure:
-    /// - [`Grid::cell_unchecked`](crate::Grid::cell_unchecked) returns
+    /// - [`Grid::item_unchecked`](crate::Grid::item_unchecked) returns
     ///   non-overlapping references
     /// - `col < width`
     /// - `start <= end`
@@ -117,7 +117,7 @@ where
             // SAFETY:
             // constructors guaranty that:
             debug_assert!(point < self.grid.size());
-            Some(unsafe { self.grid.cell_unchecked(point) })
+            Some(unsafe { self.grid.item_unchecked(point) })
         } else {
             None
         }
@@ -142,16 +142,16 @@ where
 
             // SAFETY:
             // constructors guaranty that:
-            // cell_unchecked returns valid, non-overlapping references.
+            // item_unchecked returns valid, non-overlapping references.
             // Then, it is safe to extend grid's lifetime
             let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
 
             // SAFETY:
             // constructors guaranty that:
             debug_assert!(point < self.grid.size());
-            let cell = unsafe { grid.cell_unchecked(point) };
+            let item = unsafe { grid.item_unchecked(point) };
 
-            Some(cell)
+            Some(item)
         } else {
             None
         }
