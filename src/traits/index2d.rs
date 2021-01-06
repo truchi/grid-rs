@@ -10,6 +10,19 @@ pub trait Index2D {
     fn unchecked(self, size: Size) -> Point<Range<usize>>;
 }
 
+impl Index2D for () {
+    fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
+        Some(self.unchecked(size))
+    }
+
+    fn unchecked(self, size: Size) -> Point<Range<usize>> {
+        Point {
+            x: 0..size.width,
+            y: 0..size.height,
+        }
+    }
+}
+
 impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for (X, Y) {
     fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
         Some(Point {

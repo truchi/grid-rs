@@ -13,7 +13,7 @@ pub trait Index1D {
 impl Index1D for usize {
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         if self < max_index {
-            Some((self, 0..max_end))
+            Some(self.unchecked(max_end))
         } else {
             None
         }
