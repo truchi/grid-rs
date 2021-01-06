@@ -41,7 +41,7 @@ impl<I, T> ColMajor1D<I, T> {
         Some(unsafe { items.get_unchecked_mut(range) })
     }
 
-    pub unsafe fn col_unchecked_mut(&mut self, index: impl Index1D) -> &mut [I]
+    pub unsafe fn col_mut_unchecked(&mut self, index: impl Index1D) -> &mut [I]
     where
         T: AsMut<[I]>,
     {
@@ -98,7 +98,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut ColMajor1D<I, T> {
     }
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
-        self.col_unchecked_mut(index).iter_mut()
+        self.col_mut_unchecked(index).iter_mut()
     }
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
