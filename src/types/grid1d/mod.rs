@@ -7,7 +7,8 @@ pub use row_major::*;
 use crate::*;
 use std::marker::PhantomData;
 
-/// Error type for [`Grid1D`](crate::Grid1D) constructors.
+/// Error type for [`Grid1D`](crate::Grid1D) constructor.
+/// TODO impl std::error::Error
 #[derive(Copy, Clone, Debug)]
 pub enum Grid1DError<T> {
     /// `width * height > usize::MAX`.
