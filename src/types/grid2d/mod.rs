@@ -1,3 +1,9 @@
+mod col;
+mod row;
+
+pub use col::*;
+pub use row::*;
+
 use crate::*;
 use std::marker::PhantomData;
 
