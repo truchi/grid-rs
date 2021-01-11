@@ -19,15 +19,18 @@ pub type ColMut<'a, I, T> = Col<&'a mut I, &'a mut T>;
 impl<I, T: Grid<I>> Col<I, T> {
     /// Returns a [`Col`](crate::Col), or `None` if out of bounds.
     fn new_owned(grid: T, index: impl Index1D) -> Option<Self> {
-        let (width, height) = grid.size().into();
-        let (col, range) = index.checked(width, height)?;
+        let index = index.col(grid.size())?;
 
         // SAFETY:
-        // Index1D::checked guaranties that:
-        debug_assert!(col < width);
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= height);
-        Some(unsafe { Self::new_unchecked_owned(grid, (col, range)) })
+        // Index1D::col guaranties that:
+        {
+            let (width, height) = grid.size().into();
+            let (col, range) = index.clone();
+            debug_assert!(col < width);
+            debug_assert!(range.start <= range.end);
+            debug_assert!(range.end <= height);
+        }
+        Some(unsafe { Self::new_unchecked_owned(grid, index) })
     }
 
     /// Returns a [`Col`](crate::Col), without bounds checking.
@@ -39,7 +42,7 @@ impl<I, T: Grid<I>> Col<I, T> {
     /// - `start <= end`
     /// - `end <= height`
     unsafe fn new_unchecked_owned(grid: T, index: impl Index1D) -> Self {
-        let (col, range) = index.unchecked(grid.size().height);
+        let (col, range) = index.col_unchecked(grid.size());
 
         Self {
             grid,

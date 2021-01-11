@@ -10,7 +10,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let index = index.checked(self.size.height, self.size.width)?;
+        let index = index.row(self.size())?;
 
         // SAFETY:
         // Index1D::checked does the bounds checking
@@ -22,7 +22,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let (row, range) = index.unchecked(self.size.width);
+        let (row, range) = index.row_unchecked(self.size());
         let rows = self.as_ref();
 
         debug_assert!(row < rows.len());
@@ -38,7 +38,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsMut<[U]>,
         U: AsMut<[I]>,
     {
-        let index = index.checked(self.size.height, self.size.width)?;
+        let index = index.row(self.size())?;
 
         // SAFETY:
         // Index1D::checked does the bounds checking
@@ -50,7 +50,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsMut<[U]>,
         U: AsMut<[I]>,
     {
-        let (row, range) = index.unchecked(self.size.width);
+        let (row, range) = index.row_unchecked(self.size());
         let rows = self.as_mut();
 
         debug_assert!(row < rows.len());

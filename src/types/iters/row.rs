@@ -19,15 +19,18 @@ pub type RowMut<'a, I, T> = Row<&'a mut I, &'a mut T>;
 impl<I, T: Grid<I>> Row<I, T> {
     /// Returns a [`Row`](crate::Row), or `None` if out of bounds.
     fn new_owned(grid: T, index: impl Index1D) -> Option<Self> {
-        let (width, height) = grid.size().into();
-        let (row, range) = index.checked(height, width)?;
+        let index = index.row(grid.size())?;
 
         // SAFETY:
-        // Index1D::checked guaranties that:
-        debug_assert!(row < height);
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= height);
-        Some(unsafe { Self::new_unchecked_owned(grid, (row, range)) })
+        // Index1D::row guaranties that:
+        {
+            let (width, height) = grid.size().into();
+            let (row, range) = index.clone();
+            debug_assert!(row < height);
+            debug_assert!(range.start <= range.end);
+            debug_assert!(range.end <= width);
+        }
+        Some(unsafe { Self::new_unchecked_owned(grid, index) })
     }
 
     /// Returns a [`Row`](crate::Row), without bounds checking.

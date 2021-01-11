@@ -20,7 +20,8 @@ impl<I, T: Grid<I>> Cols<I, T> {
         let (width, height) = grid.size().into();
         let Point { x, y } = index.checked(grid.size())?;
 
-        // SAFETY: Index2D::checked guaranties:
+        // SAFETY:
+        // Index2D::checked guaranties:
         debug_assert!(x.start <= x.end);
         debug_assert!(y.start <= y.end);
         debug_assert!(x.end <= width);

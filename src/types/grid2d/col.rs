@@ -10,10 +10,10 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let index = index.checked(self.size.width, self.size.height)?;
+        let index = index.col(self.size())?;
 
         // SAFETY:
-        // Index1D::checked does the bounds checking
+        // Index1D::col does the bounds checking
         Some(unsafe { self.col_unchecked(index) })
     }
 
@@ -22,7 +22,7 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let (col, range) = index.unchecked(self.size.height);
+        let (col, range) = index.col_unchecked(self.size());
         let cols = self.as_ref();
 
         debug_assert!(col < cols.len());
@@ -38,7 +38,7 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsMut<[U]>,
         U: AsMut<[I]>,
     {
-        let index = index.checked(self.size.width, self.size.height)?;
+        let index = index.col(self.size())?;
 
         // SAFETY:
         // Index1D::checked does the bounds checking
@@ -50,7 +50,7 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsMut<[U]>,
         U: AsMut<[I]>,
     {
-        let (col, range) = index.unchecked(self.size.height);
+        let (col, range) = index.col_unchecked(self.size());
         let cols = self.as_mut();
 
         debug_assert!(col < cols.len());

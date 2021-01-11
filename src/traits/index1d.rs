@@ -2,12 +2,28 @@ use crate::*;
 use std::ops::{Range, RangeBounds};
 
 /// Indexing into a column or a row of a grid, with optional slicing.
-pub trait Index1D {
+pub trait Index1D: Sized {
     /// Returns the index **with** bounds checking.
     fn checked(self, max_index: usize, max_end: usize) -> Option<(usize, Range<usize>)>;
 
     /// Returns the index **without** bounds checking.
     fn unchecked(self, max_end: usize) -> (usize, Range<usize>);
+
+    fn row(self, size: Size) -> Option<(usize, Range<usize>)> {
+        self.checked(size.height, size.width)
+    }
+
+    fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
+        self.unchecked(size.width)
+    }
+
+    fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
+        self.checked(size.width, size.height)
+    }
+
+    fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
+        self.unchecked(size.height)
+    }
 }
 
 impl Index1D for usize {
