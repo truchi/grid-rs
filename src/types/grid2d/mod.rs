@@ -63,6 +63,10 @@ impl<M: Major, I, T, U> Grid2D<M, I, T, U> {
                 },
         }
     }
+
+    pub fn msize(&self) -> M {
+        self.size
+    }
 }
 
 impl<M, I, T: AsRef<[U]>, U> AsRef<[U]> for Grid2D<M, I, T, U> {

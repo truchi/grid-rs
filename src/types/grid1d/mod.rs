@@ -55,6 +55,18 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
                 },
         }
     }
+
+    pub fn msize(&self) -> M {
+        self.size
+    }
+
+    pub fn major(&self) -> usize {
+        self.size.major()
+    }
+
+    pub fn minor(&self) -> usize {
+        self.size.minor()
+    }
 }
 
 impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Grid1D<M, I, T> {

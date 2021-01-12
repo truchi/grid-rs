@@ -10,7 +10,7 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let index = index.col(self.size())?;
+        let index = index.col(self.size().into())?;
 
         // SAFETY:
         // Index1D::col does the bounds checking
@@ -22,7 +22,7 @@ impl<I, T, U> ColMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let (col, range) = index.col_unchecked(self.size());
+        let (col, range) = index.col_unchecked(self.size().into());
         let cols = self.as_ref();
 
         debug_assert!(col < cols.len());

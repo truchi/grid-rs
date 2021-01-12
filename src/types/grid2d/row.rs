@@ -10,7 +10,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let index = index.row(self.size())?;
+        let index = index.row(self.size().into())?;
 
         // SAFETY:
         // Index1D::checked does the bounds checking
@@ -22,7 +22,7 @@ impl<I, T, U> RowMajor2D<I, T, U> {
         T: AsRef<[U]>,
         U: AsRef<[I]>,
     {
-        let (row, range) = index.row_unchecked(self.size());
+        let (row, range) = index.row_unchecked(self.size().into());
         let rows = self.as_ref();
 
         debug_assert!(row < rows.len());

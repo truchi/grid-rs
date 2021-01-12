@@ -9,45 +9,28 @@ impl<I, T> RowMajor1D<I, T> {
     where
         T: AsRef<[I]>,
     {
-        let range = self.size.range(index)?;
-        let items = self.as_ref();
-
-        // SAFETY:
-        // Major::range does the bounds checking
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= items.len());
-        Some(unsafe { items.get_unchecked(range) })
+        index.get_1d(self)
     }
 
     pub unsafe fn row_unchecked(&self, index: impl Index1D) -> &[I]
     where
         T: AsRef<[I]>,
     {
-        self.as_ref()
-            .get_unchecked(self.size.range_unchecked(index))
+        index.get_1d_unchecked(self)
     }
 
     pub fn row_mut(&mut self, index: impl Index1D) -> Option<&mut [I]>
     where
         T: AsMut<[I]>,
     {
-        let range = self.size.range(index)?;
-        let items = self.as_mut();
-
-        // SAFETY:
-        // Major::range does the bounds checking
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= items.len());
-        Some(unsafe { items.get_unchecked_mut(range) })
+        index.get_mut_1d(self)
     }
 
     pub unsafe fn row_mut_unchecked(&mut self, index: impl Index1D) -> &mut [I]
     where
         T: AsMut<[I]>,
     {
-        self.items
-            .as_mut()
-            .get_unchecked_mut(self.size.range_unchecked(index))
+        index.get_mut_1d_unchecked(self)
     }
 }
 
@@ -59,8 +42,7 @@ impl<'a, I, T: AsRef<[I]>> Grid<&'a I> for &'a RowMajor1D<I, T> {
     type Rows = RowsRef<'a, I, RowMajor1D<I, T>>;
 
     unsafe fn item_unchecked(self, point: Point) -> &'a I {
-        self.as_ref()
-            .get_unchecked(self.size.index_unchecked(point))
+        point.get_1d_unchecked(self)
     }
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
@@ -92,9 +74,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut RowMajor1D<I, T> {
     type Rows = RowsMut<'a, I, RowMajor1D<I, T>>;
 
     unsafe fn item_unchecked(self, point: Point) -> &'a mut I {
-        self.items
-            .as_mut()
-            .get_unchecked_mut(self.size.index_unchecked(point))
+        point.get_mut_1d_unchecked(self)
     }
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {

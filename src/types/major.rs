@@ -1,9 +1,8 @@
 use crate::*;
-use std::ops::Range;
 
 /// Trait for [`ColMajor`](crate::ColMajor) and [`RowMajor`](crate::RowMajor)
 /// [`Size`](crate::Size)s of [`Grid1D`](crate::Grid1D)s.
-pub trait Major: From<Size> + Into<Size> + Copy {
+pub trait Major: From<Size> + Into<Size> + From<Point> + Into<Point> + Copy {
     /// Returns a new `Self` from the lengths of the major axis `major`
     /// and minor axis `minor`.
     fn new(major: usize, minor: usize) -> Self;
@@ -14,10 +13,11 @@ pub trait Major: From<Size> + Into<Size> + Copy {
     /// Returns the length on the minor axis.
     fn minor(self) -> usize;
 
+    /*
     /// Returns the index at `point` if `point < size`,
     /// `None` otherwise.
     fn index(self, point: Point) -> Option<usize> {
-        if point < self.into() {
+        if point < Into::<Point>::into(self) {
             Some(self.index_unchecked(point))
         } else {
             None
@@ -26,7 +26,7 @@ pub trait Major: From<Size> + Into<Size> + Copy {
 
     /// Returns the index at `point`, without checking bounds.
     fn index_unchecked(self, point: Point) -> usize {
-        let point = Self::from(point.into());
+        let point = Self::from(point);
 
         point.minor() * self.major() + point.major()
     }
@@ -34,7 +34,7 @@ pub trait Major: From<Size> + Into<Size> + Copy {
     /// Returns the range of the `index` on the major axis if `index < size`,
     /// `None` otherwise.
     fn range(self, index: impl Index1D) -> Option<Range<usize>> {
-        let index = index.checked(self.minor(), self.major())?;
+        let index = index.checked(self)?;
 
         Some(self.range_unchecked(index))
     }
@@ -42,13 +42,14 @@ pub trait Major: From<Size> + Into<Size> + Copy {
     /// Returns the range of the `index` on the major axis if `index < size`,
     /// without checking bounds.
     fn range_unchecked(self, index: impl Index1D) -> Range<usize> {
-        let (i, Range { start, end }) = index.unchecked(self.major());
+        let (i, Range { start, end }) = index.unchecked(self);
 
-        let point = Self::new(start, i).into().into();
+        let point: Point = Self::new(start, i).into();
         let start = self.index_unchecked(point);
 
         start..start + end
     }
+    */
 }
 
 macro_rules! majors {
@@ -69,6 +70,18 @@ macro_rules! majors {
         impl From<$Major> for Size {
             fn from($Major { width, height }: $Major) -> Self {
                 Self { width, height }
+            }
+        }
+
+        impl From<Point> for $Major {
+            fn from(Point { x, y }: Point) -> Self {
+                Self { width: x, height: y }
+            }
+        }
+
+        impl From<$Major> for Point {
+            fn from($Major { width, height }: $Major) -> Self {
+                Self { x: width, y: height }
             }
         }
 
@@ -118,6 +131,7 @@ mod tests {
         assert_eq!(ROW_MAJOR.minor(), 2);
     }
 
+    /*
     #[test]
     fn index() {
         let col_indexes = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)];
@@ -163,4 +177,5 @@ mod tests {
         assert_eq!(COL_MAJOR.range(col_ranges.len()), None);
         assert_eq!(ROW_MAJOR.range(row_ranges.len()), None);
     }
+    */
 }

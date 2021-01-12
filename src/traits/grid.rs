@@ -75,7 +75,7 @@ pub trait Grid<Item>: WithSize + Sized {
     /// or `None` if out of bounds.
     fn col(self, index: impl Index1D) -> Option<Self::Col> {
         let (width, height) = self.size().into();
-        let (col, range) = index.checked(width, height)?;
+        let (col, range) = index.col(self.size())?;
 
         // SAFETY:
         // Index1D::checked guaranties that:
@@ -89,7 +89,7 @@ pub trait Grid<Item>: WithSize + Sized {
     /// or `None` if out of bounds.
     fn row(self, index: impl Index1D) -> Option<Self::Row> {
         let (width, height) = self.size().into();
-        let (row, range) = index.checked(height, width)?;
+        let (row, range) = index.row(self.size())?;
 
         // SAFETY:
         // Index1D::checked guaranties that:
