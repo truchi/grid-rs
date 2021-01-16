@@ -2,16 +2,18 @@ use crate::*;
 
 /// Trait for [`ColMajor`](crate::ColMajor) and [`RowMajor`](crate::RowMajor)
 /// [`Size`](crate::Size)s of [`Grid1D`](crate::Grid1D)s.
-pub trait Major: From<Size> + Into<Size> + From<Point> + Into<Point> + Copy {
+pub trait Major<Maj = usize, Min = Maj>:
+    Copy + From<Size<Maj, Min>> + Into<Size<Maj, Min>> + From<Point<Maj, Min>> + Into<Point<Maj, Min>>
+{
     /// Returns a new `Self` from the lengths of the major axis `major`
     /// and minor axis `minor`.
-    fn new(major: usize, minor: usize) -> Self;
+    fn new(major: Maj, minor: Min) -> Self;
 
     /// Returns the length on the major axis.
-    fn major(self) -> usize;
+    fn major(self) -> Maj;
 
     /// Returns the length on the minor axis.
-    fn minor(self) -> usize;
+    fn minor(self) -> Min;
 
     /*
     /// Returns the index at `point` if `point < size`,

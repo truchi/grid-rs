@@ -42,7 +42,7 @@ impl<'a, I, T: AsRef<[I]>> Grid<&'a I> for &'a RowMajor1D<I, T> {
     type Rows = RowsRef<'a, I, RowMajor1D<I, T>>;
 
     unsafe fn item_unchecked(self, point: Point) -> &'a I {
-        point.get_1d_unchecked(self)
+        Index0D::get_1d_unchecked(point, self)
     }
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
@@ -74,7 +74,7 @@ impl<'a, I, T: AsMut<[I]>> Grid<&'a mut I> for &'a mut RowMajor1D<I, T> {
     type Rows = RowsMut<'a, I, RowMajor1D<I, T>>;
 
     unsafe fn item_unchecked(self, point: Point) -> &'a mut I {
-        point.get_mut_1d_unchecked(self)
+        Index0D::get_mut_1d_unchecked(point, self)
     }
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {

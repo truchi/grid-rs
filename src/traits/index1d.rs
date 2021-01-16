@@ -101,7 +101,7 @@ pub trait Index1D: Sized {
 fn index_1d<M: Major>(index: (usize, Range<usize>), size: M) -> Range<usize> {
     let (i, Range { start, end }) = index;
     let point: Point = M::new(start, i).into();
-    let start = point.index_1d_unchecked(size);
+    let start = Index0D::index_1d_unchecked(point, size);
 
     start..start + end
 }
