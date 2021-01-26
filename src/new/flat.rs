@@ -1,18 +1,4 @@
-use crate::{
-    Grid,
-    GridMut,
-    Index0D,
-    Index1D,
-    MGrid,
-    MGridMut,
-    Major,
-    Point,
-    Size,
-    XGrid,
-    XGridMut,
-    XMajor,
-    YMajor,
-};
+use crate::*;
 use std::{
     marker::PhantomData,
     ops::{Index, IndexMut, RangeBounds},
@@ -67,6 +53,18 @@ impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Flat<M, I, T> {
     }
 }
 
+impl<M: Major, I, T> WithSize for Flat<M, I, T> {
+    fn size(&self) -> Size {
+        self.size.into()
+    }
+}
+
+impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
+    fn msize(&self) -> M {
+        self.size
+    }
+}
+
 pub type XFlat<I, T> = Flat<XMajor, I, T>;
 pub type YFlat<I, T> = Flat<YMajor, I, T>;
 
@@ -105,34 +103,25 @@ macro_rules! grid {
     ($(
         $Type:ident<$($As:ident)*> $as:ident  $Grid:path:
         $Index:ident $Output:ty,
-        $([$($size:tt)*])?
         ($fn:ident $via:ident $($mut:ident)?)
     )*) => { $(
         impl<I, T: $($As<[I]> +)*> $Grid for $Type<I, T> {
-            $(grid!(impl $($size)*);)?
-
             unsafe fn $fn(&$($mut)? self, index: impl $Index) -> &$($mut)? $Output {
                 use crate::new::index::flat::$Index;
-                let size = self.size();
+                let size = self.msize();
                 let index = index.unchecked(size).index(size);
 
                 self.items.$as().$via(index)
             }
         }
     )* };
-    (impl size) => {
-        fn size(&self) -> Size { self.size.into() }
-    };
-    (impl msize $M:ident) => {
-        fn msize(&self) -> $M { self.size }
-    };
 }
 
 grid!(
-    XFlat<AsRef> as_ref Grid<I>: Index0D I, [size] (get_unchecked get_unchecked)
-    YFlat<AsRef> as_ref Grid<I>: Index0D I, [size] (get_unchecked get_unchecked)
-    XFlat<AsRef> as_ref MGrid<XMajor, I>: Index1D [I], [msize XMajor] (slice_unchecked get_unchecked)
-    YFlat<AsRef> as_ref MGrid<YMajor, I>: Index1D [I], [msize YMajor] (slice_unchecked get_unchecked)
+    XFlat<AsRef> as_ref Grid<I>: Index0D I, (get_unchecked get_unchecked)
+    YFlat<AsRef> as_ref Grid<I>: Index0D I, (get_unchecked get_unchecked)
+    XFlat<AsRef> as_ref MGrid<XMajor, I>: Index1D [I], (slice_unchecked get_unchecked)
+    YFlat<AsRef> as_ref MGrid<YMajor, I>: Index1D [I], (slice_unchecked get_unchecked)
     XFlat<AsRef AsMut> as_mut GridMut<I>: Index0D I, (get_unchecked_mut get_unchecked_mut mut)
     YFlat<AsRef AsMut> as_mut GridMut<I>: Index0D I, (get_unchecked_mut get_unchecked_mut mut)
     XFlat<AsRef AsMut> as_mut MGridMut<XMajor, I>: Index1D [I], (slice_unchecked_mut get_unchecked_mut mut)

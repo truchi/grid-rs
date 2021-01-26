@@ -1,14 +1,10 @@
-use crate::{Index0D, Index1D, Major, Point, Size, XMajor, YMajor};
+use crate::*;
 use std::ops::{Index, IndexMut};
 
 macro_rules! grid {
     ($self:ident $(
         $(#[$meta:meta])*
-        $Trait:ident $(: ($($Bounds:tt)*))? $({
-            $(#[$size_meta:meta])*
-            $size:ident
-
-        })? {
+        $Trait:ident $(: ($($Bounds:tt)*))? {
             ($Self:ty) -> $Item:ty;
             $(#[$item_unchecked_meta:meta])*
             $item_unchecked:ident
@@ -18,11 +14,6 @@ macro_rules! grid {
     )*) => { $(
         $(#[$meta])*
         pub trait $Trait<I> $(: $($Bounds)*)? {
-            $(
-                $(#[$size_meta])*
-                fn $size(&self) -> Size;
-            )?
-
             $(#[$item_unchecked_meta])*
             unsafe fn $item_unchecked($self: $Self, index: impl Index0D) -> $Item;
 
@@ -39,10 +30,7 @@ macro_rules! grid {
 
 grid!(self
     ///
-    Grid: (Index<Point, Output = I>) {
-        ///
-        size
-    } {
+    Grid: (WithSize + Index<Point, Output = I>) {
         (&Self) -> &I;
         ///
         get_unchecked
@@ -62,10 +50,7 @@ grid!(self
 macro_rules! mgrid {
     ($self:ident $(
         $(#[$meta:meta])*
-        $Trait:ident$(<$M:ident>)?: ($($Bounds:tt)*) $({
-            $(#[$msize_meta:meta])*
-            $msize:ident
-        })? {
+        $Trait:ident$(<$M:ident>)?: ($($Bounds:tt)*) {
             ($Self:ty) -> $Items:ty;
             $(#[$slice_unchecked_meta:meta])*
             $slice_unchecked:ident
@@ -75,13 +60,6 @@ macro_rules! mgrid {
     )*) => { $(
         $(#[$meta])*
         pub trait $Trait<$($M: Major,)? I>: $($Bounds)* {
-            $(
-                $(#[$msize_meta])*
-                fn $msize(&self) -> M {
-                    M::from(self.size())
-                }
-            )?
-
             $(#[$slice_unchecked_meta])*
             unsafe fn $slice_unchecked($self: $Self, index: impl Index1D) -> $Items;
 
@@ -98,10 +76,7 @@ macro_rules! mgrid {
 
 mgrid!(self
     ///
-    MGrid<M>: (Grid<I> + Index<usize, Output = [I]>) {
-        ///
-        msize
-    } {
+    MGrid<M>: (WithMSize<M> + Grid<I> + Index<usize, Output = [I]>) {
         (&Self) -> &[I];
         ///
         slice_unchecked
