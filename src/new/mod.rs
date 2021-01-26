@@ -36,7 +36,7 @@ impl<M: Major, T: std::ops::Deref<Target = U>, U: WithMSize<M>> WithMSize<M> for
 
 pub use index::*;
 mod index {
-    use crate::{Coord, Flat, Major, Point, Size, ToRange};
+    use crate::*;
     use std::ops::{Range, RangeBounds};
 
     pub trait Index0D {
@@ -58,9 +58,16 @@ mod index {
         }
     }
 
-    pub trait Index1D {
+    pub trait Index1D: Sized {
         fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>);
         fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)>;
+        fn row(self, size: Size) -> Option<(usize, Range<usize>)> {
+            self.checked(XMajor::from(size))
+        }
+
+        fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
+            self.checked(YMajor::from(size))
+        }
     }
 
     impl Index1D for usize {
@@ -90,6 +97,44 @@ mod index {
 
         fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>) {
             (self.0, ToRange::unchecked(self.1, size.major()))
+        }
+    }
+
+    /// Indexing into a rectangle inside a grid, with optional cropping.
+    pub trait Index2D {
+        /// Returns the index **with** bounds checking.
+        fn checked(self, size: Size) -> Option<Point<Range<usize>>>;
+
+        /// Returns the index **without** bounds checking.
+        fn unchecked(self, size: Size) -> Point<Range<usize>>;
+    }
+
+    impl Index2D for () {
+        fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
+            Some(self.unchecked(size))
+        }
+
+        fn unchecked(self, size: Size) -> Point<Range<usize>> {
+            Point {
+                x: 0..size.x,
+                y: 0..size.x,
+            }
+        }
+    }
+
+    impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for (X, Y) {
+        fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
+            Some(Point {
+                x: ToRange::checked(self.0, size.x)?,
+                y: ToRange::checked(self.1, size.y)?,
+            })
+        }
+
+        fn unchecked(self, size: Size) -> Point<Range<usize>> {
+            Point {
+                x: ToRange::unchecked(self.0, size.x),
+                y: ToRange::unchecked(self.1, size.y),
+            }
         }
     }
 
