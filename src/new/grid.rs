@@ -1,12 +1,12 @@
 use crate::*;
 use std::ops::{Index, IndexMut};
 
-pub trait GridIter<Item>: WithSize + Sized {
+pub trait GridIter<I>: WithSize + Sized {
     /// The type of the column iterator.
-    type Col: Iterator<Item = Item>;
+    type Col: Iterator<Item = I>;
 
     /// The type of the row iterator.
-    type Row: Iterator<Item = Item>;
+    type Row: Iterator<Item = I>;
 
     /// The type of the columns iterator.
     type Cols: Iterator<Item = Self::Col>;
@@ -15,13 +15,13 @@ pub trait GridIter<Item>: WithSize + Sized {
     type Rows: Iterator<Item = Self::Row>;
 
     /// The type of the items iterator.
-    type Items: Iterator<Item = Item>;
+    type Items: Iterator<Item = I>;
 
     /// Returns the item at `point` without bounds checking.
     ///
     /// Callers **MUST** ensure:
     /// - `point < size`
-    unsafe fn item_unchecked(self, point: Point) -> Item;
+    unsafe fn item_unchecked(self, point: Point) -> I;
 
     /// Returns an iterator over items at column `index`, without bounds
     /// checking.
@@ -62,7 +62,7 @@ pub trait GridIter<Item>: WithSize + Sized {
     unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
 
     /// Returns the item at `point`, or `None` if `point >= size`.
-    fn item(self, point: Point) -> Option<Item> {
+    fn item(self, point: Point) -> Option<I> {
         if point < self.size() {
             // SAFETY:
             // point < size
