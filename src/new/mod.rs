@@ -1,6 +1,7 @@
 mod coord;
 mod flat;
 mod grid;
+mod iters;
 // mod index;
 mod major;
 mod range;
@@ -8,6 +9,7 @@ mod range;
 pub use coord::*;
 pub use flat::*;
 pub use grid::*;
+pub use iters::*;
 // pub use index::*;
 pub use major::*;
 pub use range::*;
