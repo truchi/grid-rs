@@ -21,7 +21,7 @@ pub trait GridIter<I>: WithSize + Sized {
     ///
     /// Callers **MUST** ensure:
     /// - `point < size`
-    unsafe fn item_unchecked(self, point: Point) -> I;
+    unsafe fn item_unchecked(self, index: impl Index0D) -> I;
 
     /// Returns an iterator over items at column `index`, without bounds
     /// checking.
@@ -62,87 +62,56 @@ pub trait GridIter<I>: WithSize + Sized {
     unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
 
     /// Returns the item at `point`, or `None` if `point >= size`.
-    fn item(self, point: Point) -> Option<I> {
-        if point < self.size() {
-            // SAFETY:
-            // point < size
-            Some(unsafe { self.item_unchecked(point) })
-        } else {
-            None
-        }
+    fn item(self, index: impl Index0D) -> Option<I> {
+        let index = index.checked(self.size())?;
+
+        // SAFETY: index is checked
+        Some(unsafe { self.item_unchecked(index) })
     }
 
     /// Returns an iterator over items at column `index`,
     /// or `None` if out of bounds.
     fn col(self, index: impl Index1D) -> Option<Self::Col> {
-        let (width, height) = self.size().into();
-        let (col, range) = index.col(self.size())?;
+        let index = index.checked(YMajor::from(self.size()))?;
 
-        // SAFETY:
-        // Index1D::checked guaranties that:
-        debug_assert!(col < width);
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= height);
-        Some(unsafe { self.col_unchecked((col, range)) })
+        // SAFETY: index is checked
+        Some(unsafe { self.col_unchecked(index) })
     }
 
     /// Returns an iterator over items at row `index`,
     /// or `None` if out of bounds.
     fn row(self, index: impl Index1D) -> Option<Self::Row> {
-        let (width, height) = self.size().into();
-        let (row, range) = index.row(self.size())?;
+        let index = index.checked(XMajor::from(self.size()))?;
 
-        // SAFETY:
-        // Index1D::checked guaranties that:
-        debug_assert!(row < height);
-        debug_assert!(range.start <= range.end);
-        debug_assert!(range.end <= width);
-        Some(unsafe { self.row_unchecked((row, range)) })
+        // SAFETY: index is checked
+        Some(unsafe { self.row_unchecked(index) })
     }
 
     /// Returns an iterator over columns at `index`,
     /// or `None` if out of bounds.
     fn cols(self, index: impl Index2D) -> Option<Self::Cols> {
-        let (width, height) = self.size().into();
-        let Point { x, y } = index.checked(self.size())?;
+        let index = index.checked(self.size())?;
 
-        // SAFETY:
-        // Index2D::checked guaranties that:
-        debug_assert!(x.start <= x.end);
-        debug_assert!(y.start <= y.end);
-        debug_assert!(x.end <= width);
-        debug_assert!(y.end <= height);
-        Some(unsafe { self.cols_unchecked((x, y)) })
+        // SAFETY: index is checked
+        Some(unsafe { self.cols_unchecked(index) })
     }
 
     /// Returns an iterator over rows at `index`,
     /// or `None` if out of bounds.
     fn rows(self, index: impl Index2D) -> Option<Self::Rows> {
-        let (width, height) = self.size().into();
-        let Point { x, y } = index.checked(self.size())?;
+        let index = index.checked(self.size())?;
 
-        // SAFETY:
-        // Index2D::checked guaranties that:
-        debug_assert!(x.start <= x.end);
-        debug_assert!(y.start <= y.end);
-        debug_assert!(x.end <= width);
-        debug_assert!(y.end <= height);
-        Some(unsafe { self.rows_unchecked((x, y)) })
+        // SAFETY: index is checked
+        Some(unsafe { self.rows_unchecked(index) })
     }
 
     /// Returns an iterator over items at `index`,
     /// or `None` if out of bounds.
     fn items(self, index: impl Index2D) -> Option<Self::Items> {
-        let (width, height) = self.size().into();
-        let Point { x, y } = index.checked(self.size())?;
+        let index = index.checked(self.size())?;
 
-        // SAFETY:
-        // Index2D::checked guaranties that:
-        debug_assert!(x.start <= x.end);
-        debug_assert!(y.start <= y.end);
-        debug_assert!(x.end <= width);
-        debug_assert!(y.end <= height);
-        Some(unsafe { self.items_unchecked((x, y)) })
+        // SAFETY: index is checked
+        Some(unsafe { self.items_unchecked(index) })
     }
 }
 

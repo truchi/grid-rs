@@ -61,13 +61,6 @@ mod index {
     pub trait Index1D: Sized {
         fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>);
         fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)>;
-        fn row(self, size: Size) -> Option<(usize, Range<usize>)> {
-            self.checked(XMajor::from(size))
-        }
-
-        fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
-            self.checked(YMajor::from(size))
-        }
     }
 
     impl Index1D for usize {
@@ -119,6 +112,16 @@ mod index {
                 x: 0..size.x,
                 y: 0..size.x,
             }
+        }
+    }
+
+    impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for Point<X, Y> {
+        fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
+            (self.x, self.y).checked(size)
+        }
+
+        fn unchecked(self, size: Size) -> Point<Range<usize>> {
+            (self.x, self.y).unchecked(size)
         }
     }
 
