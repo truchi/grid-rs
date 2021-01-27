@@ -2,6 +2,47 @@ use crate::{new::index::iters, *};
 use std::{marker::PhantomData, ops::Range};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
+pub struct Helper<M, Idx: Iterator, G, Ret> {
+    grid:    G,
+    f:       unsafe fn(G, <Idx as Iterator>::Item) -> Ret,
+    index:   Idx,
+    phantom: PhantomData<M>,
+}
+
+impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a G, &'a Ret> {
+    type Item = &'a Ret;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let point = self.index.next()?;
+
+        // SAFETY: TODO
+        Some(unsafe { (self.f)(self.grid, point) })
+    }
+}
+
+impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a mut G, &'a mut Ret> {
+    type Item = &'a mut Ret;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let point = self.index.next()?;
+
+        // SAFETY:
+        // constructors guaranty that:
+        // item_unchecked returns valid, non-overlapping references.
+        // Then, it is safe to extend grid's lifetime
+        let grid = unsafe { std::mem::transmute::<&mut G, &mut G>(self.grid) };
+
+        // SAFETY: TODO
+        Some(unsafe { (self.f)(grid, point) })
+    }
+}
+
+// =================================================================== //
+// Hopefully those 2 are the same as the one above
+// TODO delete Slice, Slices
+// =================================================================== //
+
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Slice<M, I, G> {
     grid:  G,
     f:     unsafe fn(G, Point) -> I,
