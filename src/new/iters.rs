@@ -1,6 +1,13 @@
 use crate::{new::index::iters, *};
 use std::{marker::PhantomData, ops::Range};
 
+type Helper1D<M, G, Ret> = Helper<XMajor, iters::Index1D<M>, G, Ret>;
+type Helper2D<M, G, Ret> = Helper<XMajor, iters::Index2D<M>, G, Ret>;
+pub type XHelper1D<G, Ret> = Helper1D<XMajor, G, Ret>;
+pub type YHelper1D<G, Ret> = Helper1D<YMajor, G, Ret>;
+pub type XHelper2D<G, Ret> = Helper2D<XMajor, G, Ret>;
+pub type YHelper2D<G, Ret> = Helper2D<YMajor, G, Ret>;
+
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Helper<M, Idx: Iterator, G, Ret> {
     grid:    G,
@@ -9,8 +16,73 @@ pub struct Helper<M, Idx: Iterator, G, Ret> {
     phantom: PhantomData<M>,
 }
 
-impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a G, &'a Ret> {
-    type Item = &'a Ret;
+impl<M: Major, G: WithMSize<M>, Ret> Helper1D<M, G, Ret> {
+    // impl<M: Major, G: WithMSize<M>, Ret> Helper<M, iters::Index1D<M>, G, Ret> {
+    /// SAFETY: TODO
+    pub unsafe fn new(grid: G, index: impl Index1D, f: unsafe fn(G, Point) -> Ret) -> Option<Self> {
+        let index = index.checked(grid.msize())?.into();
+
+        Some(Self {
+            grid,
+            f,
+            index,
+            phantom: PhantomData,
+        })
+    }
+
+    /// SAFETY: TODO
+    pub unsafe fn new_unchecked(
+        grid: G,
+        index: impl Index1D,
+        f: unsafe fn(G, Point) -> Ret,
+    ) -> Self {
+        let index = index.unchecked(grid.msize()).into();
+
+        Self {
+            grid,
+            f,
+            index,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<M: Major, G: WithSize, Ret> Helper2D<M, G, Ret> {
+    /// SAFETY: TODO
+    pub unsafe fn new(
+        grid: G,
+        index: impl Index2D,
+        f: unsafe fn(G, (usize, Range<usize>)) -> Ret,
+    ) -> Option<Self> {
+        let index = index.checked(grid.size())?.into();
+
+        Some(Self {
+            grid,
+            f,
+            index,
+            phantom: PhantomData,
+        })
+    }
+
+    /// SAFETY: TODO
+    pub unsafe fn new_unchecked(
+        grid: G,
+        index: impl Index2D,
+        f: unsafe fn(G, (usize, Range<usize>)) -> Ret,
+    ) -> Self {
+        let index = index.unchecked(grid.size()).into();
+
+        Self {
+            grid,
+            f,
+            index,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a G, Ret> {
+    type Item = Ret;
 
     fn next(&mut self) -> Option<Self::Item> {
         let point = self.index.next()?;
@@ -20,8 +92,8 @@ impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a G, &'a
     }
 }
 
-impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a mut G, &'a mut Ret> {
-    type Item = &'a mut Ret;
+impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a mut G, Ret> {
+    type Item = Ret;
 
     fn next(&mut self) -> Option<Self::Item> {
         let point = self.index.next()?;

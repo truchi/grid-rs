@@ -65,6 +65,46 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
     }
 }
 
+use std::{iter::Flatten, slice::Iter};
+
+impl<'a, I, T: AsRef<[I]>> GridIter<&'a I> for &'a Flat<XMajor, I, T> {
+    type Col = XHelper1D<Self, &'a I>;
+    type Cols = YHelper2D<Self, Self::Col>;
+    type Items = Flatten<Self::Rows>;
+    type Row = Iter<'a, I>;
+    type Rows = XHelper2D<Self, Self::Row>;
+
+    unsafe fn item_unchecked(self, index: impl Index0D) -> &'a I {
+        use crate::new::index::flat::Index0D;
+        let size = self.msize();
+        let index = index.unchecked(size).index(size);
+
+        self.items.as_ref().get_unchecked(index)
+    }
+
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
+        Self::Col::new_unchecked(self, index, Self::item_unchecked)
+    }
+
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        self.slice_unchecked(index).iter()
+    }
+
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+        Self::Cols::new_unchecked(self, index, Self::col_unchecked)
+    }
+
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+        Self::Rows::new_unchecked(self, index, Self::row_unchecked)
+    }
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        todo!()
+    }
+}
+
+// ================================================================ //
+
 pub type XFlat<I, T> = Flat<XMajor, I, T>;
 pub type YFlat<I, T> = Flat<YMajor, I, T>;
 

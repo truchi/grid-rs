@@ -145,7 +145,7 @@ pub(crate) mod iters {
         phantom: PhantomData<M>,
     }
 
-    impl<M: Major> From<(usize, Range<usize>)> for Index1D<M> {
+    impl<M> From<(usize, Range<usize>)> for Index1D<M> {
         fn from((i, range): (usize, Range<usize>)) -> Self {
             Self {
                 i,
@@ -191,7 +191,7 @@ pub(crate) mod iters {
         }
     }
 
-    impl<M: Major> Iterator for Index2D<M> {
+    impl<M> Iterator for Index2D<M> {
         type Item = (usize, Range<usize>);
 
         fn next(&mut self) -> Option<(usize, Range<usize>)> {
