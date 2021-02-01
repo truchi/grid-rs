@@ -1,12 +1,15 @@
 use crate::*;
 use std::ops::{Index, IndexMut};
 
-pub trait GridIter<I>: WithSize + Sized {
+pub trait GridIter: WithSize + Sized {
+    /// The type of the items.
+    type Item;
+
     /// The type of the column iterator.
-    type Col: Iterator<Item = I>;
+    type Col: Iterator<Item = Self::Item>;
 
     /// The type of the row iterator.
-    type Row: Iterator<Item = I>;
+    type Row: Iterator<Item = Self::Item>;
 
     /// The type of the columns iterator.
     type Cols: Iterator<Item = Self::Col>;
@@ -15,13 +18,13 @@ pub trait GridIter<I>: WithSize + Sized {
     type Rows: Iterator<Item = Self::Row>;
 
     /// The type of the items iterator.
-    type Items: Iterator<Item = I>;
+    type Items: Iterator<Item = Self::Item>;
 
     /// Returns the item at `point` without bounds checking.
     ///
     /// Callers **MUST** ensure:
     /// - `point < size`
-    unsafe fn item_unchecked(self, index: impl Index0D) -> I;
+    unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item;
 
     /// Returns an iterator over items at column `index`, without bounds
     /// checking.
@@ -62,7 +65,7 @@ pub trait GridIter<I>: WithSize + Sized {
     unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
 
     /// Returns the item at `point`, or `None` if `point >= size`.
-    fn item(self, index: impl Index0D) -> Option<I> {
+    fn item(self, index: impl Index0D) -> Option<Self::Item> {
         let index = index.checked(self.size())?;
 
         // SAFETY: index is checked
@@ -118,25 +121,34 @@ pub trait GridIter<I>: WithSize + Sized {
 macro_rules! grid {
     ($self:ident $(
         $(#[$meta:meta])*
-        $Trait:ident $(: ($($Bounds:tt)*))? {
-            ($Self:ty) -> $Item:ty;
-            $(#[$item_unchecked_meta:meta])*
-            $item_unchecked:ident
-            $(#[$item_meta:meta])*
-            $item:ident
+        $(($mut:ident))? $Trait:ident: ($($Bounds:tt)*)
+        $([
+            $(#[$assoc_meta:meta])*
+            $Assoc:ident
+        ])?
+        {
+            $(#[$fn_unchecked_meta:meta])*
+            $fn_unchecked:ident
+            $(#[$fn_meta:meta])*
+            $fn:ident
         }
     )*) => { $(
         $(#[$meta])*
-        pub trait $Trait<I> $(: $($Bounds)*)? {
-            $(#[$item_unchecked_meta])*
-            unsafe fn $item_unchecked($self: $Self, index: impl Index0D) -> $Item;
+        pub trait $Trait: $($Bounds)* {
+            $(
+                $(#[$assoc_meta])*
+                type $Assoc;
+            )?
 
-            $(#[$item_meta])*
-            fn $item($self: $Self, index: impl Index0D) -> Option<$Item> {
-                let index = index.checked($self.size())?;
+            $(#[$fn_unchecked_meta])*
+            unsafe fn $fn_unchecked(self: &$($mut)? Self, index: impl Index0D) -> &$($mut)? Self::Item;
+
+            $(#[$fn_meta])*
+            fn $fn(self: &$($mut)? Self, index: impl Index0D) -> Option<&$($mut)? Self::Item> {
+                let index = index.checked(self.size())?;
 
                 // SAFETY: index is checked
-                Some(unsafe { $self.$item_unchecked(index) })
+                Some(unsafe { self.$fn_unchecked(index) })
             }
         }
     )* };
@@ -144,16 +156,17 @@ macro_rules! grid {
 
 grid!(self
     ///
-    Grid: (WithSize + Index<Point, Output = I>) {
-        (&Self) -> &I;
+    Grid: (WithSize) [
+        ///
+        Item
+    ] {
         ///
         get_unchecked
         ///
         get
     }
     ///
-    GridMut: (Grid<I> + IndexMut<Point, Output = I>) {
-        (&mut Self) -> &mut I;
+    (mut) GridMut: (Grid) {
         ///
         get_unchecked_mut
         ///
@@ -164,25 +177,24 @@ grid!(self
 macro_rules! mgrid {
     ($self:ident $(
         $(#[$meta:meta])*
-        $Trait:ident$(<$M:ident>)?: ($($Bounds:tt)*) {
-            ($Self:ty) -> $Items:ty;
-            $(#[$slice_unchecked_meta:meta])*
-            $slice_unchecked:ident
-            $(#[$slice_meta:meta])*
-            $slice:ident
+        $(($mut:ident))? $Trait:ident$(<$M:ident>)?: ($($Bounds:tt)*) {
+            $(#[$fn_unchecked_meta:meta])*
+            $fn_unchecked:ident
+            $(#[$fn_meta:meta])*
+            $fn:ident
         }
     )*) => { $(
         $(#[$meta])*
-        pub trait $Trait<$($M: Major,)? I>: $($Bounds)* {
-            $(#[$slice_unchecked_meta])*
-            unsafe fn $slice_unchecked($self: $Self, index: impl Index1D) -> $Items;
+        pub trait $Trait<$($M: Major)?>: $($Bounds)* {
+            $(#[$fn_unchecked_meta])*
+            unsafe fn $fn_unchecked(self: &$($mut)? Self, index: impl Index1D) -> &$($mut)? [Self::Item];
 
-            $(#[$slice_meta])*
-            fn $slice($self: $Self, index: impl Index1D) -> Option<$Items> {
-                let index = index.checked($self.msize())?;
+            $(#[$fn_meta])*
+            fn $fn(self: &$($mut)? Self, index: impl Index1D) -> Option<&$($mut)? [Self::Item]> {
+                let index = index.checked(self.msize())?;
 
                 // SAFETY: index is checked
-                Some(unsafe { $self.$slice_unchecked(index) })
+                Some(unsafe { self.$fn_unchecked(index) })
             }
         }
     )* };
@@ -190,48 +202,42 @@ macro_rules! mgrid {
 
 mgrid!(self
     ///
-    MGrid<M>: (WithMSize<M> + Grid<I> + Index<usize, Output = [I]>) {
-        (&Self) -> &[I];
+    MGrid<M>: (WithMSize<M> + Grid) {
         ///
         slice_unchecked
         ///
         slice
     }
     ///
-    MGridMut<M>: (MGrid<M, I> + GridMut<I> + IndexMut<usize, Output = [I]>) {
-        (&mut Self) -> &mut [I];
+    (mut) MGridMut<M>: (MGrid<M> + GridMut) {
         ///
         slice_unchecked_mut
         ///
         slice_mut
     }
     ///
-    XGrid: (MGrid<XMajor, I>) {
-        (&Self) -> &[I];
+    XGrid: (MGrid<XMajor>) {
         ///
         row_unchecked
         ///
         row
     }
     ///
-    XGridMut: (XGrid<I> + MGridMut<XMajor, I>) {
-        (&mut Self) -> &mut [I];
+    (mut) XGridMut: (XGrid + MGridMut<XMajor>) {
         ///
         row_unchecked_mut
         ///
         row_mut
     }
     ///
-    YGrid: (MGrid<YMajor, I>) {
-        (&Self) -> &[I];
+    YGrid: (MGrid<YMajor>) {
         ///
         col_unchecked
         ///
         col
     }
     ///
-    YGridMut: (YGrid<I> + MGridMut<YMajor, I>) {
-        (&mut Self) -> &mut [I];
+    (mut) YGridMut: (YGrid + MGridMut<YMajor>) {
         ///
         col_unchecked_mut
         ///
@@ -241,8 +247,8 @@ mgrid!(self
 
 macro_rules! impl_xygrid {
     ($($MGrid:ident<$Major:ident> $XYGrid:ident $fn:ident $via:ident $(($mut:ident))?)*) => { $(
-        impl<I, T: $MGrid<$Major, I>> $XYGrid<I> for T {
-            unsafe fn $fn(&$($mut)? self, index: impl Index1D) -> &$($mut)? [I] {
+        impl<T: $MGrid<$Major>> $XYGrid for T {
+            unsafe fn $fn(&$($mut)? self, index: impl Index1D) -> &$($mut)? [Self::Item] {
                 self.$via(index)
             }
         }

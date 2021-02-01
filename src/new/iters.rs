@@ -1,12 +1,111 @@
 use crate::{new::index::iters, *};
 use std::{marker::PhantomData, ops::Range};
 
+type Iter1D<M, T> = Iter<iters::Index1D<M>, T, unsafe fn(T, Point) -> <T as GridIter>::Item>;
+type Iter2D<M, T, Item> = Iter<iters::Index2D<M>, T, unsafe fn(T, (usize, Range<usize>)) -> Item>;
+pub type XIter1D<T> = Iter1D<XMajor, T>;
+pub type YIter1D<T> = Iter1D<YMajor, T>;
+pub type XIter2D<T> = Iter2D<XMajor, T, <T as GridIter>::Row>;
+pub type YIter2D<T> = Iter2D<YMajor, T, <T as GridIter>::Col>;
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct Iter<I, T, F> {
+    index: I,
+    grid:  T,
+    func:  F,
+}
+
+impl<M, T: GridIter> Iter1D<M, T> {
+    /// SAFETY: TODO
+    pub unsafe fn new<TM: Major>(
+        grid: T,
+        index: impl Index1D,
+        func: unsafe fn(T, Point) -> T::Item,
+    ) -> Option<Self>
+    where
+        T: WithMSize<TM>,
+    {
+        let index = index.checked(grid.msize())?.into();
+
+        Some(Self { index, grid, func })
+    }
+
+    /// SAFETY: TODO
+    pub unsafe fn new_unchecked<TM: Major>(
+        grid: T,
+        index: impl Index1D,
+        func: unsafe fn(T, Point) -> T::Item,
+    ) -> Self
+    where
+        T: WithMSize<TM>,
+    {
+        let index = index.unchecked(grid.msize()).into();
+
+        Self { index, grid, func }
+    }
+}
+
+impl<M: Major, T: WithSize, Item> Iter2D<M, T, Item> {
+    /// SAFETY: TODO
+    pub unsafe fn new(
+        grid: T,
+        index: impl Index2D,
+        func: unsafe fn(T, (usize, Range<usize>)) -> Item,
+    ) -> Option<Self> {
+        let index = index.checked(grid.size())?.into();
+
+        Some(Self { index, grid, func })
+    }
+
+    /// SAFETY: TODO
+    pub unsafe fn new_unchecked(
+        grid: T,
+        index: impl Index2D,
+        func: unsafe fn(T, (usize, Range<usize>)) -> Item,
+    ) -> Self {
+        let index = index.unchecked(grid.size()).into();
+
+        Self { index, grid, func }
+    }
+}
+
+impl<'a, I: Iterator, T, Item> Iterator for Iter<I, &'a T, unsafe fn(&'a T, I::Item) -> Item> {
+    type Item = Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let index = self.index.next()?;
+
+        // SAFETY: TODO
+        Some(unsafe { (self.func)(self.grid, index) })
+    }
+}
+
+impl<'a, I: Iterator, T, Item> Iterator
+    for Iter<I, &'a mut T, unsafe fn(&'a mut T, I::Item) -> Item>
+{
+    type Item = Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let index = self.index.next()?;
+
+        // SAFETY:
+        // constructors guaranty that:
+        // item_unchecked returns valid, non-overlapping references.
+        // Then, it is safe to extend grid's lifetime
+        let grid = unsafe { std::mem::transmute::<&mut T, &mut T>(self.grid) };
+
+        // SAFETY: TODO
+        Some(unsafe { (self.func)(grid, index) })
+    }
+}
+
+/*
 type Helper1D<M, G, Ret> = Helper<XMajor, iters::Index1D<M>, G, Ret>;
 type Helper2D<M, G, Ret> = Helper<XMajor, iters::Index2D<M>, G, Ret>;
 pub type XHelper1D<G, Ret> = Helper1D<XMajor, G, Ret>;
 pub type YHelper1D<G, Ret> = Helper1D<YMajor, G, Ret>;
-pub type XHelper2D<G, Ret> = Helper2D<XMajor, G, Ret>;
-pub type YHelper2D<G, Ret> = Helper2D<YMajor, G, Ret>;
+pub type XHelper2D<G, I> = Helper2D<XMajor, G, <G as GridIter<I>>::Row>;
+pub type YHelper2D<G, I> = Helper2D<YMajor, G, <G as GridIter<I>>::Col>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Helper<M, Idx: Iterator, G, Ret> {
@@ -17,7 +116,6 @@ pub struct Helper<M, Idx: Iterator, G, Ret> {
 }
 
 impl<M: Major, G: WithMSize<M>, Ret> Helper1D<M, G, Ret> {
-    // impl<M: Major, G: WithMSize<M>, Ret> Helper<M, iters::Index1D<M>, G, Ret> {
     /// SAFETY: TODO
     pub unsafe fn new(grid: G, index: impl Index1D, f: unsafe fn(G, Point) -> Ret) -> Option<Self> {
         let index = index.checked(grid.msize())?.into();
@@ -108,6 +206,7 @@ impl<'a, M: Major, Idx: Iterator, G, Ret> Iterator for Helper<M, Idx, &'a mut G,
         Some(unsafe { (self.f)(grid, point) })
     }
 }
+*/
 
 // =================================================================== //
 // Hopefully those 2 are the same as the one above
