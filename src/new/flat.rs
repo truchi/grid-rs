@@ -1,8 +1,13 @@
 use crate::*;
 use std::{
+    iter::Flatten,
     marker::PhantomData,
     ops::{Index, IndexMut, RangeBounds},
+    slice::{Iter, IterMut},
 };
+
+pub type XFlat<I, T> = Flat<XMajor, I, T>;
+pub type YFlat<I, T> = Flat<YMajor, I, T>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Flat<M, I, T> {
@@ -65,45 +70,74 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
     }
 }
 
-use std::{iter::Flatten, slice::Iter};
+macro_rules! grid_iter {
+    ($($M:ident $Type:ident)*) => { $(
+        grid_iter!(impl $M
+                        $Type Iter   (get_unchecked     slice_unchecked     iter)
+            (mut AsMut) $Type IterMut(get_unchecked_mut slice_unchecked_mut iter_mut)
+        );
+    )* };
+    (impl X $($(($mut:ident $AsMut:ident))? $Type:ident $Iter:ident($get:ident $slice:ident $iter:ident))*) => { $(
+        grid_iter!(impl $(($mut $AsMut))? $Type
+            Rows rows_unchecked
+            Row  row_unchecked ($Iter $iter)
+            Col  col_unchecked (YIter1D)
+            $get $slice
+        );
+    )* };
+    (impl Y $($(($mut:ident $AsMut:ident))? $Type:ident $Iter:ident($get:ident $slice:ident $iter:ident))*) => { $(
+        grid_iter!(impl $(($mut $AsMut))? $Type
+            Cols cols_unchecked
+            Col  col_unchecked ($Iter $iter)
+            Row  row_unchecked (XIter1D)
+            $get $slice
+        );
+    )* };
+    (impl $(($mut:ident $AsMut:ident))? $Type:ident
+        $Majors:ident $majors:ident
+        $Major:ident  $major:ident ($Iter:ident $iter:ident)
+        $Minor:ident  $minor:ident ($MinorIter:ident)
+        $get:ident $slice:ident
+    ) => {
+        impl<'a, I, T: AsRef<[I]> $(+ $AsMut<[I]>)?> GridIter for &'a $($mut)? $Type<I, T> {
+            type Item = &'a $($mut)? I;
+            type $Major = $Iter<'a, I>;
+            type $Minor = $MinorIter<Self>;
+            type Cols = YIter2D<Self>;
+            type Rows = XIter2D<Self>;
+            type Items = Flatten<Self::$Majors>;
 
-impl<'a, I, T: AsRef<[I]>> GridIter for &'a XFlat<I, T> {
-    type Col = XIter1D<Self>;
-    type Cols = YIter2D<Self>;
-    type Item = &'a I;
-    type Items = Flatten<Self::Rows>;
-    type Row = Iter<'a, I>;
-    type Rows = XIter2D<Self>;
+            unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
+                self.$get(index)
+            }
 
-    unsafe fn item_unchecked(self, index: impl Index0D) -> &'a I {
-        self.get_unchecked(index)
-    }
+            unsafe fn $major(self, index: impl Index1D) -> Self::$Major {
+                self.$slice(index).$iter()
+            }
 
-    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
-        Self::Col::new_unchecked(self, index, Self::item_unchecked)
-    }
+            unsafe fn $minor(self, index: impl Index1D) -> Self::$Minor {
+                Self::$Minor::new_unchecked(self, index, Self::item_unchecked)
+            }
 
-    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
-        self.slice_unchecked(index).iter()
-    }
+            unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+                Self::Cols::new_unchecked(self, index, Self::col_unchecked)
+            }
 
-    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
-        Self::Cols::new_unchecked(self, index, Self::col_unchecked)
-    }
+            unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+                Self::Rows::new_unchecked(self, index, Self::row_unchecked)
+            }
 
-    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
-        Self::Rows::new_unchecked(self, index, Self::row_unchecked)
-    }
-
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
-        todo!()
-    }
+            unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+                self.$majors(index).flatten()
+            }
+        }
+    };
 }
 
-// ================================================================ //
-
-pub type XFlat<I, T> = Flat<XMajor, I, T>;
-pub type YFlat<I, T> = Flat<YMajor, I, T>;
+grid_iter!(
+    X XFlat
+    Y YFlat
+);
 
 macro_rules! index {
     ($($Type:ident)*) => { $(
@@ -146,8 +180,6 @@ macro_rules! index {
     };
 }
 
-index!(XFlat YFlat);
-
 macro_rules! grid {
     ($($Type:ident $Major:ident)*) => { $(
         grid!(impl trait
@@ -184,6 +216,8 @@ macro_rules! grid {
         }
     };
 }
+
+index!(XFlat YFlat);
 
 grid!(
     XFlat XMajor
