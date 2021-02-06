@@ -75,7 +75,7 @@ pub trait Grid: WithSize + Sized {
     /// Returns an iterator over items at column `index`,
     /// or `None` if out of bounds.
     fn col(self, index: impl Index1D) -> Option<Self::Col> {
-        let index = index.checked(YMajor::from(self.size()))?;
+        let index = index.checked(ColMajor::from(self.size()))?;
 
         // SAFETY: index is checked
         Some(unsafe { self.col_unchecked(index) })
@@ -84,7 +84,7 @@ pub trait Grid: WithSize + Sized {
     /// Returns an iterator over items at row `index`,
     /// or `None` if out of bounds.
     fn row(self, index: impl Index1D) -> Option<Self::Row> {
-        let index = index.checked(XMajor::from(self.size()))?;
+        let index = index.checked(RowMajor::from(self.size()))?;
 
         // SAFETY: index is checked
         Some(unsafe { self.row_unchecked(index) })

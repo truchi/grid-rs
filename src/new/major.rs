@@ -45,6 +45,6 @@ macro_rules! majors {
 }
 
 majors!(
-    XMajor x y
-    YMajor y x
+    ColMajor y x
+    RowMajor x y
 );

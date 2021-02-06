@@ -3,10 +3,10 @@ use std::{marker::PhantomData, ops::Range};
 
 type Iter1D<M, T> = Iter<iters::Index1D<M>, T, unsafe fn(T, Point) -> <T as Grid>::Item>;
 type Iter2D<M, T, Item> = Iter<iters::Index2D<M>, T, unsafe fn(T, (usize, Range<usize>)) -> Item>;
-pub type XIter1D<T> = Iter1D<XMajor, T>;
-pub type YIter1D<T> = Iter1D<YMajor, T>;
-pub type XIter2D<T> = Iter2D<XMajor, T, <T as Grid>::Row>;
-pub type YIter2D<T> = Iter2D<YMajor, T, <T as Grid>::Col>;
+pub type ColIter<T> = Iter1D<ColMajor, T>;
+pub type RowIter<T> = Iter1D<RowMajor, T>;
+pub type ColsIter<T> = Iter2D<ColMajor, T, <T as Grid>::Col>;
+pub type RowsIter<T> = Iter2D<RowMajor, T, <T as Grid>::Row>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Iter<I, T, F> {

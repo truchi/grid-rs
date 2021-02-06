@@ -6,8 +6,8 @@ use std::{
     slice::{Iter, IterMut},
 };
 
-pub type XFlat<I, T> = Flat<XMajor, I, T>;
-pub type YFlat<I, T> = Flat<YMajor, I, T>;
+pub type ColFlat<I, T> = Flat<ColMajor, I, T>;
+pub type RowFlat<I, T> = Flat<RowMajor, I, T>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Flat<M, I, T> {
@@ -71,19 +71,19 @@ macro_rules! grid_iter {
             (mut) $Type AsMut as_mut get_unchecked_mut
         );
     )* };
-    (impl X $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
-        grid_iter!(impl $(($mut))? $Type $As $as
-            Rows rows_unchecked
-            Row  row_unchecked
-            Col  col_unchecked (YIter1D)
-            $get
-        );
-    )* };
-    (impl Y $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
+    (impl Col $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
         grid_iter!(impl $(($mut))? $Type $As $as
             Cols cols_unchecked
             Col  col_unchecked
-            Row  row_unchecked (XIter1D)
+            Row  row_unchecked (RowIter)
+            $get
+        );
+    )* };
+    (impl Row $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
+        grid_iter!(impl $(($mut))? $Type $As $as
+            Rows rows_unchecked
+            Row  row_unchecked
+            Col  col_unchecked (ColIter)
             $get
         );
     )* };
@@ -97,8 +97,8 @@ macro_rules! grid_iter {
             type Item = &'a $($mut)? I;
             type $Major = &'a $($mut)? [I];
             type $Minor = $MinorIter<Self>;
-            type Cols = YIter2D<Self>;
-            type Rows = XIter2D<Self>;
+            type Cols = ColsIter<Self>;
+            type Rows = RowsIter<Self>;
             type Items = Flatten<Self::$Majors>;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
@@ -137,6 +137,6 @@ macro_rules! grid_iter {
 }
 
 grid_iter!(
-    X XFlat
-    Y YFlat
+    Col ColFlat
+    Row RowFlat
 );
