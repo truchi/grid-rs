@@ -64,15 +64,15 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
     }
 }
 
-macro_rules! grid_iter {
+macro_rules! grid {
     ($($M:ident $Type:ident)*) => { $(
-        grid_iter!(impl $M
+        grid!(impl $M
                   $Type AsRef as_ref get_unchecked
             (mut) $Type AsMut as_mut get_unchecked_mut
         );
     )* };
     (impl Col $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
-        grid_iter!(impl $(($mut))? $Type $As $as
+        grid!(impl $(($mut))? $Type $As $as
             Cols cols_unchecked
             Col  col_unchecked
             Row  row_unchecked (RowIter)
@@ -80,7 +80,7 @@ macro_rules! grid_iter {
         );
     )* };
     (impl Row $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
-        grid_iter!(impl $(($mut))? $Type $As $as
+        grid!(impl $(($mut))? $Type $As $as
             Rows rows_unchecked
             Row  row_unchecked
             Col  col_unchecked (ColIter)
@@ -136,7 +136,7 @@ macro_rules! grid_iter {
     };
 }
 
-grid_iter!(
+grid!(
     Col ColFlat
     Row RowFlat
 );
