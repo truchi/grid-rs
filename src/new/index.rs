@@ -2,16 +2,16 @@ use crate::*;
 use std::ops::{Range, RangeBounds};
 
 pub trait Index0D {
-    fn unchecked<S: Into<Size>>(self, size: S) -> Point;
-    fn checked<S: Into<Size>>(self, size: S) -> Option<Point>;
+    fn unchecked(self, size: Size) -> Point;
+    fn checked(self, size: Size) -> Option<Point>;
 }
 
 impl Index0D for Point {
-    fn unchecked<S: Into<Size>>(self, size: S) -> Point {
+    fn unchecked(self, size: Size) -> Point {
         self
     }
 
-    fn checked<S: Into<Size>>(self, size: S) -> Option<Point> {
+    fn checked(self, size: Size) -> Option<Point> {
         if self < size.into() {
             Some(self)
         } else {

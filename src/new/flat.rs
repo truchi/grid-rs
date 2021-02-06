@@ -27,22 +27,16 @@ impl<M: Major, I, T> Flat<M, I, T> {
         }
     }
 
-    /// Creates a new [`Flat`](crate::Flat) if `len >= x * y`, `None` otherwise.
+    /// Creates a new [`Flat`](crate::Flat) if `len != x * y`, `None` otherwise.
     pub fn new(size: Size, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
     {
-        if items.as_ref().len() >= size.x * size.y {
+        if items.as_ref().len() == size.x * size.y {
             Some(Self::new_unchecked(size, items))
         } else {
             None
         }
-    }
-}
-
-impl<M: Major, I, T> Flat<M, I, T> {
-    pub fn size(&self) -> M {
-        self.size
     }
 }
 
@@ -73,46 +67,54 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
 macro_rules! grid_iter {
     ($($M:ident $Type:ident)*) => { $(
         grid_iter!(impl $M
-                        $Type Iter   (get_unchecked     slice_unchecked     iter)
-            (mut AsMut) $Type IterMut(get_unchecked_mut slice_unchecked_mut iter_mut)
+                  $Type AsRef as_ref get_unchecked
+            (mut) $Type AsMut as_mut get_unchecked_mut
         );
     )* };
-    (impl X $($(($mut:ident $AsMut:ident))? $Type:ident $Iter:ident($get:ident $slice:ident $iter:ident))*) => { $(
-        grid_iter!(impl $(($mut $AsMut))? $Type
+    (impl X $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
+        grid_iter!(impl $(($mut))? $Type $As $as
             Rows rows_unchecked
-            Row  row_unchecked ($Iter $iter)
+            Row  row_unchecked
             Col  col_unchecked (YIter1D)
-            $get $slice
+            $get
         );
     )* };
-    (impl Y $($(($mut:ident $AsMut:ident))? $Type:ident $Iter:ident($get:ident $slice:ident $iter:ident))*) => { $(
-        grid_iter!(impl $(($mut $AsMut))? $Type
+    (impl Y $($(($mut:ident))? $Type:ident $As:ident $as:ident $get:ident)*) => { $(
+        grid_iter!(impl $(($mut))? $Type $As $as
             Cols cols_unchecked
-            Col  col_unchecked ($Iter $iter)
+            Col  col_unchecked
             Row  row_unchecked (XIter1D)
-            $get $slice
+            $get
         );
     )* };
-    (impl $(($mut:ident $AsMut:ident))? $Type:ident
+    (impl $(($mut:ident))? $Type:ident $As:ident $as:ident
         $Majors:ident $majors:ident
-        $Major:ident  $major:ident ($Iter:ident $iter:ident)
+        $Major:ident  $major:ident
         $Minor:ident  $minor:ident ($MinorIter:ident)
-        $get:ident $slice:ident
+        $get:ident
     ) => {
-        impl<'a, I, T: AsRef<[I]> $(+ $AsMut<[I]>)?> GridIter for &'a $($mut)? $Type<I, T> {
+        impl<'a, I, T: $As<[I]>> Grid for &'a $($mut)? $Type<I, T> {
             type Item = &'a $($mut)? I;
-            type $Major = $Iter<'a, I>;
+            type $Major = &'a $($mut)? [I];
             type $Minor = $MinorIter<Self>;
             type Cols = YIter2D<Self>;
             type Rows = XIter2D<Self>;
             type Items = Flatten<Self::$Majors>;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-                self.$get(index)
+                use crate::new::index::flat::Index0D;
+                let msize = self.msize();
+                let index = index.unchecked(msize.into()).index(msize);
+
+                self.items.$as().$get(index)
             }
 
             unsafe fn $major(self, index: impl Index1D) -> Self::$Major {
-                self.$slice(index).$iter()
+                use crate::new::index::flat::Index1D;
+                let msize = self.msize();
+                let index = index.unchecked(msize).index(msize);
+
+                self.items.$as().$get(index)
             }
 
             unsafe fn $minor(self, index: impl Index1D) -> Self::$Minor {
@@ -137,89 +139,4 @@ macro_rules! grid_iter {
 grid_iter!(
     X XFlat
     Y YFlat
-);
-
-macro_rules! index {
-    ($($Type:ident)*) => { $(
-        index!(impl trait
-            Index(index)<Point, Output = I>
-            for $Type get
-        );
-        index!(impl trait
-            Index(index)<usize, Output = [I]>
-            for $Type slice
-        );
-        index!(impl trait <(R: RangeBounds<usize>)>
-            Index(index)<(usize, R), Output = [I]>
-            for $Type slice
-        );
-        index!(impl trait (mut AsMut)
-            IndexMut(index_mut)<Point>
-            for $Type get_mut
-        );
-        index!(impl trait (mut AsMut)
-            IndexMut(index_mut)<usize>
-            for $Type slice_mut
-        );
-        index!(impl trait (mut AsMut) <(R: RangeBounds<usize>)>
-            IndexMut(index_mut)<(usize, R)>
-            for $Type slice_mut
-        );
-    )* };
-    (impl trait $(($mut:ident $AsMut:ident))? $(<($($Bounds:tt)*)>)?
-        $Index:ident($index:ident)<$Idx:ty $(, Output = $Output:ty)?>
-        for $Type:ident $fn:ident
-    ) => {
-        impl<I, T: AsRef<[I]> $(+ $AsMut<[I]>)? $(, $($Bounds)*)?> $Index<$Idx> for $Type<I, T> {
-            $(type Output = $Output;)?
-
-            fn $index(&$($mut)? self, index: $Idx) -> &$($mut)? Self::Output {
-                self.$fn(index).expect("Out of bound index")
-            }
-        }
-    };
-}
-
-macro_rules! grid {
-    ($($Type:ident $Major:ident)*) => { $(
-        grid!(impl trait
-            [Grid] get_unchecked Index0D (Item -> Self::Item)
-            for $Type as_ref get_unchecked
-        );
-        grid!(impl trait
-            [MGrid<$Major>] slice_unchecked Index1D (-> [Self::Item])
-            for $Type as_ref get_unchecked
-        );
-        grid!(impl trait (mut AsMut)
-            [GridMut] get_unchecked_mut Index0D (-> Self::Item)
-            for $Type as_mut get_unchecked_mut
-        );
-        grid!(impl trait (mut AsMut)
-            [MGridMut<$Major>] slice_unchecked_mut Index1D (-> [Self::Item])
-            for $Type as_mut get_unchecked_mut
-        );
-    )* };
-    (impl trait $(($mut:ident $AsMut:ident))?
-        [$Grid:path] $fn:ident $Index:ident ($($Assoc:ident)? -> $Output:ty)
-        for $Type:ident $as:ident $via:ident
-    ) => {
-        impl<I, T: AsRef<[I]> + $($AsMut<[I]>)?> $Grid for $Type<I, T> {
-            $(type $Assoc = I;)?
-
-            unsafe fn $fn(&$($mut)? self, index: impl $Index) -> &$($mut)? $Output {
-                use crate::new::index::flat::$Index;
-                let size = self.msize();
-                let index = index.unchecked(size).index(size);
-
-                self.items.$as().$via(index)
-            }
-        }
-    };
-}
-
-index!(XFlat YFlat);
-
-grid!(
-    XFlat XMajor
-    YFlat YMajor
 );

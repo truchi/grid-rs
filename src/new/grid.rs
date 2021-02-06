@@ -1,15 +1,15 @@
 use crate::*;
 use std::ops::{Index, IndexMut};
 
-pub trait GridIter: WithSize + Sized {
+pub trait Grid: WithSize + Sized {
     /// The type of the items.
     type Item;
 
     /// The type of the column iterator.
-    type Col: Iterator<Item = Self::Item>;
+    type Col: IntoIterator<Item = Self::Item>;
 
     /// The type of the row iterator.
-    type Row: Iterator<Item = Self::Item>;
+    type Row: IntoIterator<Item = Self::Item>;
 
     /// The type of the columns iterator.
     type Cols: Iterator<Item = Self::Col>;
@@ -117,147 +117,3 @@ pub trait GridIter: WithSize + Sized {
         Some(unsafe { self.items_unchecked(index) })
     }
 }
-
-macro_rules! grid {
-    ($self:ident $(
-        $(#[$meta:meta])*
-        $(($mut:ident))? $Trait:ident: ($($Bounds:tt)*)
-        $([
-            $(#[$assoc_meta:meta])*
-            $Assoc:ident
-        ])?
-        {
-            $(#[$fn_unchecked_meta:meta])*
-            $fn_unchecked:ident
-            $(#[$fn_meta:meta])*
-            $fn:ident
-        }
-    )*) => { $(
-        $(#[$meta])*
-        pub trait $Trait: $($Bounds)* {
-            $(
-                $(#[$assoc_meta])*
-                type $Assoc;
-            )?
-
-            $(#[$fn_unchecked_meta])*
-            unsafe fn $fn_unchecked(self: &$($mut)? Self, index: impl Index0D) -> &$($mut)? Self::Item;
-
-            $(#[$fn_meta])*
-            fn $fn(self: &$($mut)? Self, index: impl Index0D) -> Option<&$($mut)? Self::Item> {
-                let index = index.checked(self.size())?;
-
-                // SAFETY: index is checked
-                Some(unsafe { self.$fn_unchecked(index) })
-            }
-        }
-    )* };
-}
-
-grid!(self
-    ///
-    Grid: (WithSize) [
-        ///
-        Item
-    ] {
-        ///
-        get_unchecked
-        ///
-        get
-    }
-    ///
-    (mut) GridMut: (Grid) {
-        ///
-        get_unchecked_mut
-        ///
-        get_mut
-    }
-);
-
-macro_rules! mgrid {
-    ($self:ident $(
-        $(#[$meta:meta])*
-        $(($mut:ident))? $Trait:ident$(<$M:ident>)?: ($($Bounds:tt)*) {
-            $(#[$fn_unchecked_meta:meta])*
-            $fn_unchecked:ident
-            $(#[$fn_meta:meta])*
-            $fn:ident
-        }
-    )*) => { $(
-        $(#[$meta])*
-        pub trait $Trait<$($M: Major)?>: $($Bounds)* {
-            $(#[$fn_unchecked_meta])*
-            unsafe fn $fn_unchecked(self: &$($mut)? Self, index: impl Index1D) -> &$($mut)? [Self::Item];
-
-            $(#[$fn_meta])*
-            fn $fn(self: &$($mut)? Self, index: impl Index1D) -> Option<&$($mut)? [Self::Item]> {
-                let index = index.checked(self.msize())?;
-
-                // SAFETY: index is checked
-                Some(unsafe { self.$fn_unchecked(index) })
-            }
-        }
-    )* };
-}
-
-mgrid!(self
-    ///
-    MGrid<M>: (WithMSize<M> + Grid) {
-        ///
-        slice_unchecked
-        ///
-        slice
-    }
-    ///
-    (mut) MGridMut<M>: (MGrid<M> + GridMut) {
-        ///
-        slice_unchecked_mut
-        ///
-        slice_mut
-    }
-    ///
-    XGrid: (MGrid<XMajor>) {
-        ///
-        row_unchecked
-        ///
-        row
-    }
-    ///
-    (mut) XGridMut: (XGrid + MGridMut<XMajor>) {
-        ///
-        row_unchecked_mut
-        ///
-        row_mut
-    }
-    ///
-    YGrid: (MGrid<YMajor>) {
-        ///
-        col_unchecked
-        ///
-        col
-    }
-    ///
-    (mut) YGridMut: (YGrid + MGridMut<YMajor>) {
-        ///
-        col_unchecked_mut
-        ///
-        col_mut
-    }
-);
-
-macro_rules! impl_xygrid {
-    ($($MGrid:ident<$Major:ident> $XYGrid:ident $fn:ident $via:ident $(($mut:ident))?)*) => { $(
-        impl<T: $MGrid<$Major>> $XYGrid for T {
-            unsafe fn $fn(&$($mut)? self, index: impl Index1D) -> &$($mut)? [Self::Item] {
-                self.$via(index)
-            }
-        }
-    )* };
-}
-
-impl_xygrid!(
-    MGrid   <XMajor> XGrid    row_unchecked     slice_unchecked
-    MGrid   <YMajor> YGrid    col_unchecked     slice_unchecked
-    MGridMut<XMajor> XGridMut row_unchecked_mut slice_unchecked_mut (mut)
-    MGridMut<YMajor> YGridMut col_unchecked_mut slice_unchecked_mut (mut)
-);

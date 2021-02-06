@@ -1,12 +1,12 @@
 use crate::{new::index::iters, *};
 use std::{marker::PhantomData, ops::Range};
 
-type Iter1D<M, T> = Iter<iters::Index1D<M>, T, unsafe fn(T, Point) -> <T as GridIter>::Item>;
+type Iter1D<M, T> = Iter<iters::Index1D<M>, T, unsafe fn(T, Point) -> <T as Grid>::Item>;
 type Iter2D<M, T, Item> = Iter<iters::Index2D<M>, T, unsafe fn(T, (usize, Range<usize>)) -> Item>;
 pub type XIter1D<T> = Iter1D<XMajor, T>;
 pub type YIter1D<T> = Iter1D<YMajor, T>;
-pub type XIter2D<T> = Iter2D<XMajor, T, <T as GridIter>::Row>;
-pub type YIter2D<T> = Iter2D<YMajor, T, <T as GridIter>::Col>;
+pub type XIter2D<T> = Iter2D<XMajor, T, <T as Grid>::Row>;
+pub type YIter2D<T> = Iter2D<YMajor, T, <T as Grid>::Col>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Iter<I, T, F> {
@@ -15,7 +15,7 @@ pub struct Iter<I, T, F> {
     func:  F,
 }
 
-impl<M, T: GridIter> Iter1D<M, T> {
+impl<M, T: Grid> Iter1D<M, T> {
     /// SAFETY: TODO
     pub unsafe fn new<TM: Major>(
         grid: T,
