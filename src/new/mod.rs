@@ -5,6 +5,7 @@ mod index;
 mod iters;
 mod major;
 mod range;
+mod repeat;
 
 pub use self::grid::*;
 pub use coord::*;
@@ -13,6 +14,7 @@ pub use index::*;
 pub use iters::*;
 pub use major::*;
 pub use range::*;
+pub use repeat::*;
 
 pub trait WithSize {
     fn size(&self) -> Size;
