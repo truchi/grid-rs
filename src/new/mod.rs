@@ -1,3 +1,4 @@
+mod cloned;
 mod coord;
 mod flat;
 mod grid;
@@ -8,6 +9,7 @@ mod range;
 mod repeat;
 
 pub use self::grid::*;
+pub use cloned::*;
 pub use coord::*;
 pub use flat::*;
 pub use index::*;
