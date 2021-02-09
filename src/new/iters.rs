@@ -16,13 +16,9 @@ pub struct Iter<I, T, F> {
     func:  F,
 }
 
-impl<M, T: Grid> Iter1D<M, T> {
+impl<M, T, F> Iter<iters::Index1D<M>, T, F> {
     /// SAFETY: TODO
-    pub unsafe fn new<TM: Major>(
-        grid: T,
-        index: impl Index1D,
-        func: unsafe fn(T, Point) -> T::Item,
-    ) -> Option<Self>
+    pub unsafe fn new<TM: Major>(grid: T, index: impl Index1D, func: F) -> Option<Self>
     where
         T: WithMSize<TM>,
     {
@@ -32,11 +28,7 @@ impl<M, T: Grid> Iter1D<M, T> {
     }
 
     /// SAFETY: TODO
-    pub unsafe fn new_unchecked<TM: Major>(
-        grid: T,
-        index: impl Index1D,
-        func: unsafe fn(T, Point) -> T::Item,
-    ) -> Self
+    pub unsafe fn new_unchecked<TM: Major>(grid: T, index: impl Index1D, func: F) -> Self
     where
         T: WithMSize<TM>,
     {
@@ -46,24 +38,16 @@ impl<M, T: Grid> Iter1D<M, T> {
     }
 }
 
-impl<M: Major, T: WithSize, Item> Iter2D<M, T, Item> {
+impl<M: Major, T: WithSize, F> Iter<iters::Index2D<M>, T, F> {
     /// SAFETY: TODO
-    pub unsafe fn new(
-        grid: T,
-        index: impl Index2D,
-        func: unsafe fn(T, (usize, Range<usize>)) -> Item,
-    ) -> Option<Self> {
+    pub unsafe fn new(grid: T, index: impl Index2D, func: F) -> Option<Self> {
         let index = index.checked(grid.size())?.into();
 
         Some(Self { index, grid, func })
     }
 
     /// SAFETY: TODO
-    pub unsafe fn new_unchecked(
-        grid: T,
-        index: impl Index2D,
-        func: unsafe fn(T, (usize, Range<usize>)) -> Item,
-    ) -> Self {
+    pub unsafe fn new_unchecked(grid: T, index: impl Index2D, func: F) -> Self {
         let index = index.unchecked(grid.size()).into();
 
         Self { index, grid, func }
