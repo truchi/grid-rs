@@ -1,6 +1,6 @@
 use crate::*;
 use std::{
-    iter::{repeat, Take},
+    iter::{repeat, Repeat as StdRepeat, Take},
     ops::Range,
 };
 
@@ -22,12 +22,12 @@ impl<I> WithSize for Repeat<I> {
 }
 
 impl<I: Clone> Grid for Repeat<I> {
-    type Col = Take<std::iter::Repeat<I>>;
-    type Cols = Take<std::iter::Repeat<Self::Col>>;
+    type Col = Take<StdRepeat<I>>;
+    type Cols = Take<StdRepeat<Self::Col>>;
     type Item = I;
-    type Items = Take<std::iter::Repeat<I>>;
-    type Row = Take<std::iter::Repeat<I>>;
-    type Rows = Take<std::iter::Repeat<Self::Row>>;
+    type Items = Take<StdRepeat<I>>;
+    type Row = Take<StdRepeat<I>>;
+    type Rows = Take<StdRepeat<Self::Row>>;
 
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
         self.item
