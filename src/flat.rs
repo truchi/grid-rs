@@ -102,7 +102,7 @@ macro_rules! grid {
             type Items = Flatten<Self::$Majors>;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-                use crate::new::index::flat::Index0D;
+                use crate::index::flat::Index0D;
                 let msize = self.msize();
                 let index = index.unchecked(msize.into()).index(msize);
 
@@ -110,7 +110,7 @@ macro_rules! grid {
             }
 
             unsafe fn $major(self, index: impl Index1D) -> Self::$Major {
-                use crate::new::index::flat::Index1D;
+                use crate::index::flat::Index1D;
                 let msize = self.msize();
                 let index = index.unchecked(msize).index(msize);
 

@@ -1,9 +1,9 @@
-use crate::{new::index::iters, *};
+use crate::{index::iter, *};
 use std::{marker::PhantomData, ops::Range};
 
-pub type Iter1D<M, T> = Iter<iters::Index1D<M>, T, unsafe fn(T, Point) -> <T as Grid>::Item>;
+pub type Iter1D<M, T> = Iter<iter::Index1D<M>, T, unsafe fn(T, Point) -> <T as Grid>::Item>;
 pub type Iter2D<M, T, Item> =
-    Iter<iters::Index2D<M>, T, unsafe fn(T, (usize, Range<usize>)) -> Item>;
+    Iter<iter::Index2D<M>, T, unsafe fn(T, (usize, Range<usize>)) -> Item>;
 pub type ColIter<T> = Iter1D<ColMajor, T>;
 pub type RowIter<T> = Iter1D<RowMajor, T>;
 pub type ColsIter<T> = Iter2D<ColMajor, T, <T as Grid>::Col>;
@@ -16,7 +16,7 @@ pub struct Iter<I, T, F> {
     func:  F,
 }
 
-impl<M, T, F> Iter<iters::Index1D<M>, T, F> {
+impl<M, T, F> Iter<iter::Index1D<M>, T, F> {
     /// SAFETY: TODO
     pub unsafe fn new<TM: Major>(grid: T, index: impl Index1D, func: F) -> Option<Self>
     where
@@ -38,7 +38,7 @@ impl<M, T, F> Iter<iters::Index1D<M>, T, F> {
     }
 }
 
-impl<M: Major, T: WithSize, F> Iter<iters::Index2D<M>, T, F> {
+impl<M: Major, T: WithSize, F> Iter<iter::Index2D<M>, T, F> {
     /// SAFETY: TODO
     pub unsafe fn new(grid: T, index: impl Index2D, func: F) -> Option<Self> {
         let index = index.checked(grid.size())?.into();

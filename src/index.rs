@@ -134,7 +134,7 @@ pub(crate) mod flat {
     }
 }
 
-pub(crate) mod iters {
+pub(crate) mod iter {
     use crate::{Major, Point};
     use std::{marker::PhantomData, ops::Range};
 
