@@ -104,7 +104,7 @@ pub struct Minor<'a, M, I, T> {
 }
 
 impl<'a, M: Major, I, T: AsRef<[I]>> Minor<'a, M, I, T> {
-    pub unsafe fn new_unchecked(
+    pub unsafe fn new(
         grid: &'a Flat<M, I, T>,
         (i, Range { start, end }): (usize, Range<usize>),
     ) -> Self {
@@ -147,7 +147,7 @@ pub struct MinorMut<'a, M, I, T> {
 }
 
 impl<'a, M: Major, I, T: AsMut<[I]>> MinorMut<'a, M, I, T> {
-    pub unsafe fn new_unchecked(
+    pub unsafe fn new(
         grid: &'a mut Flat<M, I, T>,
         (i, Range { start, end }): (usize, Range<usize>),
     ) -> Self {

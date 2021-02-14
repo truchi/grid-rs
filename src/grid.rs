@@ -207,32 +207,6 @@ pub trait GridItem: WithSize + Sized {
     }
 }
 
-pub trait GridMajor<M: Major>: GridItem {
-    type Major: IntoIterator<Item = Self::Item>;
-
-    unsafe fn major_unchecked(self, index: impl Index1D) -> Self::Major;
-
-    fn major(self, index: impl Index1D) -> Option<Self::Major> {
-        let index = index.checked(M::from(self.size()))?;
-
-        // SAFETY: index is checked
-        Some(unsafe { self.major_unchecked(index) })
-    }
-}
-
-pub trait GridMinor<M: Major>: GridItem {
-    type Minor: IntoIterator<Item = Self::Item>;
-
-    unsafe fn minor_unchecked(self, index: impl Index1D) -> Self::Minor;
-
-    fn minor(self, index: impl Index1D) -> Option<Self::Minor> {
-        let index = index.checked(M::from(self.size()))?;
-
-        // SAFETY: index is checked
-        Some(unsafe { self.minor_unchecked(index) })
-    }
-}
-
 pub trait GridCol: GridItem {
     type Col: IntoIterator<Item = Self::Item>;
 
