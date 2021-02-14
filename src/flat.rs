@@ -64,6 +64,7 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
     }
 }
 
+/*
 macro_rules! grid {
     ($($M:ident $Type:ident)*) => { $(
         grid!(impl $M
@@ -135,8 +136,111 @@ macro_rules! grid {
         }
     };
 }
+*/
 
+/*
 grid!(
     Col ColFlat
     Row RowFlat
 );
+*/
+
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+// ========================= //
+
+macro_rules! grid_item {
+    ($($As:ident $as:ident $get:ident $(($mut:ident))?)*) => { $(
+        impl<'a, M: Major, I, T: $As<[I]>> GridItem for &'a $($mut)? Flat<M, I, T> {
+            type Item = &'a $($mut)? I;
+
+            unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
+                use crate::index::flat::Index0D;
+                let msize = self.msize();
+                let index = index.unchecked(msize.into()).index(msize);
+
+                self.items.$as().$get(index)
+            }
+        }
+    )* };
+}
+
+grid_item!(
+    AsRef as_ref get_unchecked
+    AsMut as_mut get_unchecked_mut (mut)
+);
+
+impl<'a, M: Major, I, T: AsRef<[I]>> GridMajor<M> for &'a Flat<M, I, T> {
+    type Major = &'a [I];
+
+    unsafe fn major_unchecked(self, index: impl Index1D) -> Self::Major {
+        use crate::index::flat::Index1D;
+        let msize = self.msize();
+        let index = index.unchecked(msize).index(msize);
+
+        self.items.as_ref().get_unchecked(index)
+    }
+}
+
+impl<'a, M: Major, I, T: AsMut<[I]>> GridMajor<M> for &'a mut Flat<M, I, T> {
+    type Major = &'a mut [I];
+
+    unsafe fn major_unchecked(self, index: impl Index1D) -> Self::Major {
+        use crate::index::flat::Index1D;
+        let msize = self.msize();
+        let index = index.unchecked(msize).index(msize);
+
+        self.items.as_mut().get_unchecked_mut(index)
+    }
+}
+
+// ========================= //
+
+impl<'a, I, T: AsRef<[I]>> GridRow for &'a RowFlat<I, T> {
+    type Row = &'a [I];
+
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        self.major_unchecked(index)
+    }
+}
+
+impl<'a, I, T: AsMut<[I]>> GridRow for &'a mut RowFlat<I, T> {
+    type Row = &'a mut [I];
+
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        self.major_unchecked(index)
+    }
+}
+
+// ========================= //
+
+impl<'a, I, T: AsRef<[I]>> GridCol for &'a ColFlat<I, T> {
+    type Col = &'a [I];
+
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
+        use crate::index::flat::Index1D;
+        let msize = self.msize();
+        let index = index.unchecked(msize).index(msize);
+
+        self.items.as_ref().get_unchecked(index)
+    }
+}
+
+impl<'a, I, T: AsMut<[I]>> GridCol for &'a mut ColFlat<I, T> {
+    type Col = &'a mut [I];
+
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
+        use crate::index::flat::Index1D;
+        let msize = self.msize();
+        let index = index.unchecked(msize).index(msize);
+
+        self.items.as_mut().get_unchecked_mut(index)
+    }
+}
