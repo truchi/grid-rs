@@ -95,6 +95,8 @@ impl<'a, I: Iterator, T, Item> Iterator
 
 // ==================================================== //
 
+// TODO Minors
+
 pub struct Minor<'a, M, I, T> {
     items:    &'a [I],
     current:  usize,

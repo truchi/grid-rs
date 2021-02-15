@@ -64,12 +64,34 @@ impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
     }
 }
 
-macro_rules! grid_item {
+macro_rules! grid {
     () => {
-        grid_item!(AsRef as_ref get_unchecked );
-        grid_item!(AsMut as_mut get_unchecked_mut (mut));
+        // ITEM
+        grid!(impl [ITEM] AsRef as_ref get_unchecked);
+        grid!(impl [ITEM] AsMut as_mut get_unchecked_mut (mut));
+
+        // MAJOR
+        grid!(impl [SLICE] RowFlat GridRow Row row_unchecked AsRef as_ref get_unchecked);
+        grid!(impl [SLICE] RowFlat GridRow Row row_unchecked AsMut as_mut get_unchecked_mut (mut));
+
+        grid!(impl [SLICE] ColFlat GridCol Col col_unchecked AsRef as_ref get_unchecked);
+        grid!(impl [SLICE] ColFlat GridCol Col col_unchecked AsMut as_mut get_unchecked_mut (mut));
+
+        // MINOR
+        grid!(impl [ITER] RowFlat RowMajor GridCol Col col_unchecked AsRef Index1D msize Minor);
+        grid!(impl [ITER] RowFlat RowMajor GridCol Col col_unchecked AsMut Index1D msize MinorMut (mut));
+
+        grid!(impl [ITER] ColFlat ColMajor GridRow Row row_unchecked AsRef Index1D msize Minor);
+        grid!(impl [ITER] ColFlat ColMajor GridRow Row row_unchecked AsMut Index1D msize MinorMut (mut));
+
+        // MAJORS
+        grid!(impl [ITER] RowFlat RowMajor GridRows Rows rows_unchecked AsRef Index2D size Majors);
+        grid!(impl [ITER] RowFlat RowMajor GridRows Rows rows_unchecked AsMut Index2D size MajorsMut (mut));
+
+        grid!(impl [ITER] ColFlat ColMajor GridCols Cols cols_unchecked AsRef Index2D size Majors);
+        grid!(impl [ITER] ColFlat ColMajor GridCols Cols cols_unchecked AsMut Index2D size MajorsMut (mut));
     };
-    ($As:ident $as:ident $get:ident $(($mut:ident))?) => {
+    (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
         impl<'a, M: Major, I, T: $As<[I]>> GridItem for &'a $($mut)? Flat<M, I, T> {
             type Item = &'a $($mut)? I;
 
@@ -82,14 +104,7 @@ macro_rules! grid_item {
             }
         }
     };
-}
-
-macro_rules! grid_major {
-    ($($Type:ident: $Trait:ident ($Assoc:ident $fn:ident))*) => { $(
-        grid_major!($Type $Trait $Assoc $fn AsRef as_ref get_unchecked);
-        grid_major!($Type $Trait $Assoc $fn AsMut as_mut get_unchecked_mut (mut));
-    )* };
-    ($Type:ident $Trait:ident $Assoc:ident $fn:ident $As:ident $as:ident $get:ident $(($mut:ident))?) => {
+    (impl [SLICE] $Type:ident $Trait:ident $Assoc:ident $fn:ident $As:ident $as:ident $get:ident $(($mut:ident))?) => {
         impl<'a, I, T: $As<[I]>> $Trait for &'a $($mut)? $Type<I, T> {
             type $Assoc = &'a $($mut)? [I];
 
@@ -102,18 +117,11 @@ macro_rules! grid_major {
             }
         }
     };
-}
-
-macro_rules! grid_minor {
-    ($($Type:ident($M:ident): $Trait:ident ($Assoc:ident $fn:ident))*) => { $(
-        grid_minor!(AsRef $Type $M $Trait $Assoc $fn Index1D msize Minor);
-        grid_minor!(AsMut $Type $M $Trait $Assoc $fn Index1D msize MinorMut (mut));
-    )* };
-    (
-        $As:ident
+    (impl [ITER]
         $Type:ident $M:ident
-        $Trait:ident $Assoc:ident
-        $fn:ident $Index:ident $size:ident
+        $Trait:ident $Assoc:ident $fn:ident
+        $As:ident
+        $Index:ident $size:ident
         $Iter:ident
         $(($mut:ident))?
     ) => {
@@ -127,26 +135,4 @@ macro_rules! grid_minor {
     };
 }
 
-macro_rules! grid_majors {
-    ($($Type:ident($M:ident): $Trait:ident ($Assoc:ident $fn:ident))*) => { $(
-        grid_minor!(AsRef $Type $M $Trait $Assoc $fn Index2D size Majors);
-        grid_minor!(AsMut $Type $M $Trait $Assoc $fn Index2D size MajorsMut (mut));
-    )* };
-}
-
-grid_item!();
-
-grid_major!(
-    RowFlat: GridRow (Row row_unchecked)
-    ColFlat: GridCol (Col col_unchecked)
-);
-
-grid_minor!(
-    RowFlat(RowMajor): GridCol(Col col_unchecked)
-    ColFlat(ColMajor): GridRow(Row row_unchecked)
-);
-
-grid_majors!(
-    RowFlat(RowMajor): GridRows(Rows rows_unchecked)
-    ColFlat(ColMajor): GridCols(Cols cols_unchecked)
-);
+grid!();
