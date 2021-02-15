@@ -5,4 +5,4 @@ mod coord;
 mod range;
 
 pub use coord::*;
-pub use range::*;
+pub(crate) use range::*;
