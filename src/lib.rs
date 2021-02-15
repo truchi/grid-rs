@@ -5,20 +5,18 @@
 mod macros;
 
 mod cloned;
-mod coord;
 mod grid;
 pub mod grid_1d;
 mod index;
 mod major;
-mod range;
+mod utils;
 // mod repeat;
 
 pub use self::grid::*;
 pub use cloned::*;
-pub use coord::*;
 pub use index::*;
 pub use major::*;
-pub use range::*;
+pub use utils::*;
 // pub use repeat::*;
 
 pub trait WithSize {
