@@ -23,7 +23,7 @@ pub trait WithSize {
     fn size(&self) -> Size;
 }
 
-pub trait WithMSize<M: Major>: WithSize {
+trait WithMSize<M: Major>: WithSize {
     fn msize(&self) -> M {
         self.size().into()
     }
