@@ -6,7 +6,7 @@ mod macros;
 
 mod cloned;
 mod grid;
-pub mod grid_1d;
+pub mod grid1d;
 mod index;
 mod major;
 mod utils;
