@@ -1,10 +1,12 @@
 use crate::*;
 use std::ops::{Index, IndexMut};
 
-pub trait GridItem<I>: WithSize + Sized {
-    unsafe fn item_unchecked(self, index: impl Index0D) -> I;
+pub trait GridItem: WithSize + Sized {
+    type Item;
 
-    fn item(self, index: impl Index0D) -> Option<I> {
+    unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item;
+
+    fn item(self, index: impl Index0D) -> Option<Self::Item> {
         let index = index.checked(self.size())?;
 
         // SAFETY: index is checked
@@ -12,8 +14,8 @@ pub trait GridItem<I>: WithSize + Sized {
     }
 }
 
-pub trait GridCol<I>: GridItem<I> {
-    type Col: IntoIterator<Item = I>;
+pub trait GridCol: GridItem {
+    type Col: IntoIterator<Item = Self::Item>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col;
 
@@ -25,8 +27,8 @@ pub trait GridCol<I>: GridItem<I> {
     }
 }
 
-pub trait GridRow<I>: GridItem<I> {
-    type Row: IntoIterator<Item = I>;
+pub trait GridRow: GridItem {
+    type Row: IntoIterator<Item = Self::Item>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row;
 
@@ -38,7 +40,7 @@ pub trait GridRow<I>: GridItem<I> {
     }
 }
 
-pub trait GridCols<I>: GridCol<I> {
+pub trait GridCols: GridCol {
     type Cols: Iterator<Item = Self::Col>;
 
     unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols;
@@ -51,7 +53,7 @@ pub trait GridCols<I>: GridCol<I> {
     }
 }
 
-pub trait GridRows<I>: GridRow<I> {
+pub trait GridRows: GridRow {
     type Rows: Iterator<Item = Self::Row>;
 
     unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows;
