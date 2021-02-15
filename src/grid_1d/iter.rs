@@ -1,12 +1,5 @@
-use crate::{
-    index::{flat::Index0D, iter},
-    *,
-};
-use std::{
-    marker::PhantomData,
-    ops::Range,
-    slice::{from_raw_parts, from_raw_parts_mut},
-};
+use super::*;
+use std::{marker::PhantomData, ops::Range, slice::from_raw_parts_mut};
 
 #[derive(Debug)]
 pub struct Minor<'a, M, I, T> {
@@ -22,6 +15,7 @@ impl<'a, M: Major, I, T: AsRef<[I]>> Minor<'a, M, I, T> {
         grid: &'a Grid1D<M, I, T>,
         (i, Range { start, end }): (usize, Range<usize>),
     ) -> Self {
+        use index::Index0D;
         let msize = grid.msize();
 
         Self {

@@ -1,10 +1,8 @@
+mod index;
+pub mod iter;
+
 use crate::*;
-use std::{
-    iter::Flatten,
-    marker::PhantomData,
-    ops::{Index, IndexMut, RangeBounds},
-    slice::{Iter, IterMut},
-};
+use std::marker::PhantomData;
 
 pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
 pub type RowGrid1D<I, T> = Grid1D<RowMajor, I, T>;
@@ -100,7 +98,7 @@ macro_rules! grid {
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
         impl<'a, M: Major, I, T: $As<[I]>> GridItem<&'a $($mut)? I> for &'a $($mut)? Grid1D<M, I, T> {
             unsafe fn item_unchecked(self, index: impl Index0D) -> &'a $($mut)? I {
-                use crate::index::flat::Index0D;
+                use index::Index0D;
                 let msize = self.msize();
                 let index = index.unchecked(msize.into()).index(msize);
 
@@ -113,7 +111,7 @@ macro_rules! grid {
             type $Assoc = &'a $($mut)? [I];
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
-                use crate::index::flat::Index1D;
+                use index::Index1D;
                 let msize = self.msize();
                 let index = index.unchecked(msize).index(msize);
 
@@ -130,7 +128,7 @@ macro_rules! grid {
         $(($mut:ident))?
     ) => {
         impl<'a, I, T: $As<[I]>> $Trait<&'a $($mut)? I> for &'a $($mut)? $Type<I, T> {
-            type $Assoc = $Iter<'a, $M, I, T>;
+            type $Assoc = iter::$Iter<'a, $M, I, T>;
 
             unsafe fn $fn(self, index: impl $Index) -> Self::$Assoc {
                 Self::$Assoc::new(self, index.unchecked(self.$size()))
