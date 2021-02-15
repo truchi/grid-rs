@@ -4,7 +4,7 @@
 #[macro_use]
 mod macros;
 
-// mod cloned;
+mod cloned;
 mod coord;
 mod grid;
 pub mod grid_1d;
@@ -14,7 +14,7 @@ mod range;
 // mod repeat;
 
 pub use self::grid::*;
-// pub use cloned::*;
+pub use cloned::*;
 pub use coord::*;
 pub use index::*;
 pub use major::*;
