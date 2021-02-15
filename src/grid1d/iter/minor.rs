@@ -15,12 +15,11 @@ impl<'a, M: Major, I, T: AsRef<[I]>> Minor<'a, M, I, T> {
         grid: &'a Grid1D<M, I, T>,
         (i, Range { start, end }): (usize, Range<usize>),
     ) -> Self {
-        use index::Index0D;
         let msize = grid.msize();
 
         Self {
             items:    grid.as_ref(),
-            current:  M::new(i, start).into().index(msize),
+            current:  index0d(M::new(i, start).into(), msize),
             count:    end - start,
             by:       msize.major(),
             _phantom: PhantomData,

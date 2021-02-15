@@ -2,6 +2,7 @@ mod index;
 pub mod iter;
 
 use crate::*;
+use index::*;
 use std::marker::PhantomData;
 
 pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
@@ -97,9 +98,8 @@ macro_rules! grid {
             type Item = &'a $($mut)? I;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-                use index::Index0D;
                 let msize = self.msize();
-                let index = index.unchecked(msize.into()).index(msize);
+                let index = index0d(index.unchecked(msize.into()), msize);
 
                 self.items.$as().$get(index)
             }
@@ -110,9 +110,8 @@ macro_rules! grid {
             type $Assoc = &'a $($mut)? [I];
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
-                use index::Index1D;
                 let msize = self.msize();
-                let index = index.unchecked(msize).index(msize);
+                let index = index1d(index.unchecked(msize), msize);
 
                 self.items.$as().$get(index)
             }

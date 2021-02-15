@@ -1,28 +1,30 @@
 use crate::*;
 use std::ops::Range;
 
-pub trait Index0D {
-    fn index<M: Major>(self, size: M) -> usize;
+pub fn index0d<M: Major>(point: Point, size: M) -> usize {
+    let point = M::from(point);
+
+    point.minor() * size.major() + point.major()
 }
 
-impl Index0D for Point {
-    fn index<M: Major>(self, size: M) -> usize {
-        let point = M::from(self);
+pub fn index1d<M: Major>(
+    (i, Range { start, end }): (usize, Range<usize>),
+    size: M,
+) -> Range<usize> {
+    let start = index0d(M::new(start, i).into(), size);
 
-        point.minor() * size.major() + point.major()
-    }
+    start..start + end
 }
 
-pub trait Index1D {
-    fn index<M: Major>(self, size: M) -> Range<usize>;
-}
+pub fn major_index2d<M: Major>(index: Point<Range<usize>>) -> (Range<usize>, Range<usize>) {
+    let start = M::from(Point {
+        x: index.x.start,
+        y: index.y.start,
+    });
+    let end = M::from(Point {
+        x: index.x.end,
+        y: index.y.end,
+    });
 
-impl Index1D for (usize, Range<usize>) {
-    fn index<M: Major>(self, size: M) -> Range<usize> {
-        let (i, Range { start, end }) = self;
-        let point = M::new(start, i).into();
-        let start = point.index(size);
-
-        start..start + end
-    }
+    (start.major()..end.major(), start.minor()..end.minor())
 }

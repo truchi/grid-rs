@@ -11,7 +11,7 @@ pub struct MajorsMut<'a, M, I, T> {
 
 impl<'a, M: Major, I, T: AsMut<[I]>> MajorsMut<'a, M, I, T> {
     pub unsafe fn new(grid: &'a mut Grid1D<M, I, T>, index: Point<Range<usize>>) -> Self {
-        let (range, minor) = to_major::<M>(index);
+        let (range, minor) = major_index2d::<M>(index);
 
         // Splitting to the first col/row of interest
         let major = grid.msize().major();
@@ -58,17 +58,4 @@ impl<'a, M, I, T> Iterator for MajorsMut<'a, M, I, T> {
             Some(slice)
         }
     }
-}
-
-fn to_major<M: Major>(index: Point<Range<usize>>) -> (Range<usize>, Range<usize>) {
-    let start = M::from(Point {
-        x: index.x.start,
-        y: index.y.start,
-    });
-    let end = M::from(Point {
-        x: index.x.end,
-        y: index.y.end,
-    });
-
-    (start.major()..end.major(), start.minor()..end.minor())
 }
