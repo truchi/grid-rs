@@ -6,19 +6,19 @@ use std::{
     slice::{Iter, IterMut},
 };
 
-pub type ColFlat<I, T> = Flat<ColMajor, I, T>;
-pub type RowFlat<I, T> = Flat<RowMajor, I, T>;
+pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
+pub type RowGrid1D<I, T> = Grid1D<RowMajor, I, T>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Flat<M, I, T> {
+pub struct Grid1D<M, I, T> {
     size:    M,
     items:   T,
     phantom: PhantomData<I>,
 }
 
 /// ### Constructors
-impl<M: Major, I, T> Flat<M, I, T> {
-    /// Creates a new [`Flat`](crate::Flat), without checking size.
+impl<M: Major, I, T> Grid1D<M, I, T> {
+    /// Creates a new [`Grid1D`](crate::Grid1D), without checking size.
     pub fn new_unchecked(size: Size, items: T) -> Self {
         Self {
             size: size.into(),
@@ -27,7 +27,8 @@ impl<M: Major, I, T> Flat<M, I, T> {
         }
     }
 
-    /// Creates a new [`Flat`](crate::Flat) if `len != x * y`, `None` otherwise.
+    /// Creates a new [`Grid1D`](crate::Grid1D) if `len != x * y`, `None`
+    /// otherwise.
     pub fn new(size: Size, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
@@ -40,25 +41,25 @@ impl<M: Major, I, T> Flat<M, I, T> {
     }
 }
 
-impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Flat<M, I, T> {
+impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Grid1D<M, I, T> {
     fn as_ref(&self) -> &[I] {
         self.items.as_ref()
     }
 }
 
-impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Flat<M, I, T> {
+impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Grid1D<M, I, T> {
     fn as_mut(&mut self) -> &mut [I] {
         self.items.as_mut()
     }
 }
 
-impl<M: Major, I, T> WithSize for Flat<M, I, T> {
+impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
     fn size(&self) -> Size {
         self.size.into()
     }
 }
 
-impl<M: Major, I, T> WithMSize<M> for Flat<M, I, T> {
+impl<M: Major, I, T> WithMSize<M> for Grid1D<M, I, T> {
     fn msize(&self) -> M {
         self.size
     }
@@ -97,7 +98,7 @@ macro_rules! grid {
         )*
     };
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
-        impl<'a, M: Major, I, T: $As<[I]>> GridItem<&'a $($mut)? I> for &'a $($mut)? Flat<M, I, T> {
+        impl<'a, M: Major, I, T: $As<[I]>> GridItem<&'a $($mut)? I> for &'a $($mut)? Grid1D<M, I, T> {
             unsafe fn item_unchecked(self, index: impl Index0D) -> &'a $($mut)? I {
                 use crate::index::flat::Index0D;
                 let msize = self.msize();
@@ -173,19 +174,19 @@ macro_rules! grid {
 }
 
 grid!(
-    RowFlat<RowMajor>
+    RowGrid1D<RowMajor>
         GridRow<Row> (row_unchecked)
         GridCol<Col> (col_unchecked)
         GridRows<Rows> (rows_unchecked)
         GridCols<Cols> (cols_unchecked)
-    ColFlat<ColMajor>
+    ColGrid1D<ColMajor>
         GridCol<Col> (col_unchecked)
         GridRow<Row> (row_unchecked)
         GridCols<Cols> (cols_unchecked)
         GridRows<Rows> (rows_unchecked)
 );
 
-impl<'a, M: Major, I: Clone, T: AsRef<[I]>> GridItem<I> for &'a Flat<M, I, T> {
+impl<'a, M: Major, I: Clone, T: AsRef<[I]>> GridItem<I> for &'a Grid1D<M, I, T> {
     unsafe fn item_unchecked(self, index: impl Index0D) -> I {
         <Self as GridItem<&'a I>>::item_unchecked(self, index).clone()
     }

@@ -7,7 +7,7 @@ fn main() {
         'e', 'f', 'g', 'h', //
         'i', 'j', 'k', 'l', //
     ];
-    let mut flat = RowFlat::new((4, 3).into(), vec).unwrap();
+    let mut flat = RowGrid1D::new((4, 3).into(), vec).unwrap();
     println!("SIZE {:?}", flat.size());
 
     // ITEM
