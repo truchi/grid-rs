@@ -2,14 +2,13 @@
 // #![allow(unused)]
 
 #[macro_use]
-mod macros;
+mod utils;
 
 mod cloned;
 mod grid;
 pub mod grid1d;
 mod index;
 mod major;
-mod utils;
 // mod repeat;
 
 pub use self::grid::*;
