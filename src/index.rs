@@ -72,7 +72,7 @@ impl Index2D for () {
     fn unchecked(self, size: Size) -> Point<Range<usize>> {
         Point {
             x: 0..size.x,
-            y: 0..size.x,
+            y: 0..size.y,
         }
     }
 }

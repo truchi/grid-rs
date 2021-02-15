@@ -4,7 +4,7 @@
 #[macro_use]
 mod macros;
 
-mod cloned;
+// mod cloned;
 mod coord;
 mod flat;
 mod grid;
@@ -12,17 +12,17 @@ mod index;
 mod iter;
 mod major;
 mod range;
-mod repeat;
+// mod repeat;
 
 pub use self::grid::*;
-pub use cloned::*;
+// pub use cloned::*;
 pub use coord::*;
 pub use flat::*;
 pub use index::*;
 pub use iter::*;
 pub use major::*;
 pub use range::*;
-pub use repeat::*;
+// pub use repeat::*;
 
 pub trait WithSize {
     fn size(&self) -> Size;

@@ -1,6 +1,7 @@
 use crate::*;
 use std::ops::{Index, IndexMut};
 
+/*
 /// Trait for accessing items of 2D containers,
 /// [`Iterator`](std::iter::Iterator) based.
 ///
@@ -183,6 +184,7 @@ pub trait Grid: WithSize + Sized {
         Some(unsafe { self.items_unchecked(index) })
     }
 }
+*/
 
 // =================================== //
 // =================================== //
@@ -194,12 +196,10 @@ pub trait Grid: WithSize + Sized {
 // =================================== //
 // =================================== //
 
-pub trait GridItem: WithSize + Sized {
-    type Item;
+pub trait GridItem<I>: WithSize + Sized {
+    unsafe fn item_unchecked(self, index: impl Index0D) -> I;
 
-    unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item;
-
-    fn item(self, index: impl Index0D) -> Option<Self::Item> {
+    fn item(self, index: impl Index0D) -> Option<I> {
         let index = index.checked(self.size())?;
 
         // SAFETY: index is checked
@@ -207,8 +207,8 @@ pub trait GridItem: WithSize + Sized {
     }
 }
 
-pub trait GridCol: GridItem {
-    type Col: IntoIterator<Item = Self::Item>;
+pub trait GridCol<I>: GridItem<I> {
+    type Col: IntoIterator<Item = I>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col;
 
@@ -220,8 +220,8 @@ pub trait GridCol: GridItem {
     }
 }
 
-pub trait GridRow: GridItem {
-    type Row: IntoIterator<Item = Self::Item>;
+pub trait GridRow<I>: GridItem<I> {
+    type Row: IntoIterator<Item = I>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row;
 
@@ -233,7 +233,7 @@ pub trait GridRow: GridItem {
     }
 }
 
-pub trait GridCols: GridCol {
+pub trait GridCols<I>: GridCol<I> {
     type Cols: Iterator<Item = Self::Col>;
 
     unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols;
@@ -246,7 +246,7 @@ pub trait GridCols: GridCol {
     }
 }
 
-pub trait GridRows: GridRow {
+pub trait GridRows<I>: GridRow<I> {
     type Rows: Iterator<Item = Self::Row>;
 
     unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows;
