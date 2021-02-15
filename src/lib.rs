@@ -9,14 +9,14 @@ mod grid;
 pub mod grid1d;
 mod index;
 mod major;
-// mod repeat;
+mod repeat;
 
 pub use self::grid::*;
 pub use cloned::*;
 pub use index::*;
 pub use major::*;
+pub use repeat::*;
 pub use utils::*;
-// pub use repeat::*;
 
 pub trait WithSize {
     fn size(&self) -> Size;
