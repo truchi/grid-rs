@@ -42,21 +42,23 @@ impl<'a, I: 'a + Clone, T: GridCol<Item = &'a I>> GridCol for Cloned<T> {
 }
 
 impl<'a, I: 'a + Clone, T: GridRows<Item = &'a I>> GridRows for Cloned<T> {
-    type Rows = std::iter::Map<T::Rows, fn(T::Row) -> Self::Row>;
+    type Rows = std::iter::Map<<T::Rows as IntoIterator>::IntoIter, fn(T::Row) -> Self::Row>;
 
     unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
         self.0
             .rows_unchecked(index)
+            .into_iter()
             .map(|row| row.into_iter().cloned())
     }
 }
 
 impl<'a, I: 'a + Clone, T: GridCols<Item = &'a I>> GridCols for Cloned<T> {
-    type Cols = std::iter::Map<T::Cols, fn(T::Col) -> Self::Col>;
+    type Cols = std::iter::Map<<T::Cols as IntoIterator>::IntoIter, fn(T::Col) -> Self::Col>;
 
     unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
         self.0
             .cols_unchecked(index)
+            .into_iter()
             .map(|col| col.into_iter().cloned())
     }
 }

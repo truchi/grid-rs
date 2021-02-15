@@ -41,7 +41,7 @@ pub trait GridRow: GridItem {
 }
 
 pub trait GridCols: GridCol {
-    type Cols: Iterator<Item = Self::Col>;
+    type Cols: IntoIterator<Item = Self::Col>;
 
     unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols;
 
@@ -54,7 +54,7 @@ pub trait GridCols: GridCol {
 }
 
 pub trait GridRows: GridRow {
-    type Rows: Iterator<Item = Self::Row>;
+    type Rows: IntoIterator<Item = Self::Row>;
 
     unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows;
 
