@@ -1,5 +1,4 @@
 use crate::*;
-use std::ops::{Index, IndexMut};
 
 pub trait GridItem: WithSize + Sized {
     type Item;

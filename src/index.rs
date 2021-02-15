@@ -7,7 +7,7 @@ pub trait Index0D {
 }
 
 impl Index0D for Point {
-    fn unchecked(self, size: Size) -> Point {
+    fn unchecked(self, _: Size) -> Point {
         self
     }
 

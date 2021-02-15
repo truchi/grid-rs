@@ -1,7 +1,7 @@
 use std::ops::{Bound::*, Range, RangeBounds};
 
 /// Converts `T: RangeBounds<usize>` to `Range<usize>`.
-pub(crate) trait ToRange {
+pub trait ToRange {
     /// Converts to `Range` with bounds checking.
     fn checked(self, len: usize) -> Option<Range<usize>>;
 
