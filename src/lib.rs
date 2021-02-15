@@ -1,5 +1,5 @@
 // #![warn(missing_docs)]
-#![allow(unused)]
+// #![allow(unused)]
 
 #[macro_use]
 mod macros;
