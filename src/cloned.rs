@@ -62,3 +62,11 @@ impl<'a, I: 'a + Clone, T: GridCols<Item = &'a I>> GridCols for Cloned<T> {
             .map(|col| col.into_iter().cloned())
     }
 }
+
+impl<'a, I: 'a + Clone, T: GridItems<Item = &'a I>> GridItems for Cloned<T> {
+    type Items = std::iter::Cloned<<T::Items as IntoIterator>::IntoIter>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.0.items_unchecked(index).into_iter().cloned()
+    }
+}

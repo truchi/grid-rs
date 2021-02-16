@@ -66,3 +66,13 @@ impl<I: Clone> GridCols for Repeat<I> {
         repeat(self.col_unchecked((0, y))).take(x.end - x.start)
     }
 }
+
+impl<I: Clone> GridItems for Repeat<I> {
+    type Items = std::iter::Take<std::iter::Repeat<Self::Item>>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        let Point { x, y } = index.unchecked(self.size);
+
+        repeat(self.item).take((x.end - x.start) * (y.end - y.start))
+    }
+}

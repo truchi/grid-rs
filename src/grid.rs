@@ -64,3 +64,16 @@ pub trait GridRows: GridRow {
         Some(unsafe { self.rows_unchecked(index) })
     }
 }
+
+pub trait GridItems: GridItem {
+    type Items: IntoIterator<Item = Self::Item>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
+
+    fn items(self, index: impl Index2D) -> Option<Self::Items> {
+        let index = index.checked(self.size())?;
+
+        // SAFETY: index is checked
+        Some(unsafe { self.items_unchecked(index) })
+    }
+}

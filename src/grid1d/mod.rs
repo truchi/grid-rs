@@ -91,6 +91,10 @@ macro_rules! grid {
 
             // Minors
             grid!(impl [ITER] $Type $M $GridMinors $Minors $minors AsRef Index2D size Minors);
+
+            // Items
+            grid!(impl [ITEMS] $Type $GridMajors $Majors $majors AsRef);
+            grid!(impl [ITEMS] $Type $GridMajors $Majors $majors AsMut (mut));
         )*
     };
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
@@ -130,6 +134,19 @@ macro_rules! grid {
 
             unsafe fn $fn(self, index: impl $Index) -> Self::$Assoc {
                 Self::$Assoc::new(self, index.unchecked(self.$size()))
+            }
+        }
+    };
+    (impl [ITEMS]
+        $Type:ident
+        $GridMajors:ident $Majors:ident $majors:ident
+        $As:ident $(($mut:ident))?
+    ) => {
+        impl<'a, I, T: $As<[I]>> GridItems for &'a $($mut)? $Type<I, T> {
+            type Items = std::iter::Flatten<<Self as $GridMajors>::$Majors>;
+
+            unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+                self.$majors(index).flatten()
             }
         }
     };
