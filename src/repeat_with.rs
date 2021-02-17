@@ -147,7 +147,7 @@ impl<I, F: FnMut(Point) -> I> GridItem for RepeatWith<F> {
     }
 }
 
-impl<I, F: Fn(Point) -> I> GridRow for RepeatWith<F> {
+impl<I, F: FnMut(Point) -> I> GridRow for RepeatWith<F> {
     type Row = Iter1D<RowMajor, F>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
@@ -155,7 +155,7 @@ impl<I, F: Fn(Point) -> I> GridRow for RepeatWith<F> {
     }
 }
 
-impl<I, F: Fn(Point) -> I> GridCol for RepeatWith<F> {
+impl<I, F: FnMut(Point) -> I> GridCol for RepeatWith<F> {
     type Col = Iter1D<ColMajor, F>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
