@@ -5,6 +5,7 @@
 mod utils;
 
 mod cloned;
+mod crop;
 mod grid;
 pub mod grid1d;
 mod index;
@@ -14,6 +15,7 @@ mod repeat_with;
 
 pub use self::grid::*;
 pub use cloned::*;
+pub use crop::*;
 pub use index::*;
 pub use major::*;
 pub use repeat::*;
