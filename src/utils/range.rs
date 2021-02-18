@@ -1,4 +1,8 @@
-use std::ops::{Bound::*, Range, RangeBounds};
+use std::ops::{
+    Bound::{self, *},
+    Range,
+    RangeBounds,
+};
 
 /// Converts `T: RangeBounds<usize>` to `Range<usize>`.
 pub trait ToRange {
@@ -11,41 +15,52 @@ pub trait ToRange {
 
 impl<T: RangeBounds<usize>> ToRange for T {
     fn checked(self, len: usize) -> Option<Range<usize>> {
-        match to_start_end(self)? {
+        let start = Start::checked(self.start_bound())?;
+        let end = End::checked(self.end_bound())?;
+
+        let (start, end) = match (start, end) {
             (Start::Included(start), End::Excluded(end)) =>
                 if start <= end && end <= len {
-                    Some(start..end)
+                    (start, end)
                 } else {
-                    None
+                    return None;
                 },
             (Start::Included(start), End::Unbounded) =>
                 if start <= len {
-                    Some(start..len)
+                    (start, len)
                 } else {
-                    None
+                    return None;
                 },
             (Start::Unbounded, End::Excluded(end)) =>
                 if end <= len {
-                    Some(0..end)
+                    (0, end)
                 } else {
-                    None
+                    return None;
                 },
-            (Start::Unbounded, End::Unbounded) => Some(0..len),
-        }
+            (Start::Unbounded, End::Unbounded) => (0, len),
+        };
+
+        debug_assert!(start <= end);
+        debug_assert!(end <= len);
+        debug_assert!(len <= usize::MAX);
+
+        Some(start..end)
     }
 
     fn unchecked(self, len: usize) -> Range<usize> {
-        match (self.start_bound(), self.end_bound()) {
-            (Included(start), Excluded(end)) => *start..*end,
-            (Included(start), Included(end)) => *start..end + 1,
-            (Included(start), Unbounded) => *start..len,
-            (Unbounded, Excluded(end)) => 0..*end,
-            (Unbounded, Included(end)) => 0..end + 1,
-            (Unbounded, Unbounded) => 0..len,
-            (Excluded(start), Excluded(end)) => start + 1..*end,
-            (Excluded(start), Included(end)) => start + 1..end + 1,
-            (Excluded(start), Unbounded) => start + 1..len,
-        }
+        let start = match self.start_bound() {
+            Included(start) => *start,
+            Excluded(start) => start + 1,
+            Unbounded => 0,
+        };
+
+        let end = match self.end_bound() {
+            Included(end) => end + 1,
+            Excluded(end) => *end,
+            Unbounded => len,
+        };
+
+        start..end
     }
 }
 
@@ -59,25 +74,24 @@ enum End {
     Unbounded,
 }
 
-/// Converts `impl RangeBounds<usize>` into `(Start, End)`, or `None` if
-/// overflow.
-fn to_start_end(range: impl RangeBounds<usize>) -> Option<(Start, End)> {
-    Some(match (range.start_bound(), range.end_bound()) {
-        (Included(start), Excluded(end)) => (Start::Included(*start), End::Excluded(*end)),
-        (Included(start), Included(end)) =>
-            (Start::Included(*start), End::Excluded(end.checked_add(1)?)),
-        (Included(start), Unbounded) => (Start::Included(*start), End::Unbounded),
-        (Unbounded, Excluded(end)) => (Start::Unbounded, End::Excluded(*end)),
-        (Unbounded, Included(end)) => (Start::Unbounded, End::Excluded(end.checked_add(1)?)),
-        (Unbounded, Unbounded) => (Start::Unbounded, End::Unbounded),
-        (Excluded(start), Excluded(end)) =>
-            (Start::Included(start.checked_add(1)?), End::Excluded(*end)),
-        (Excluded(start), Included(end)) => (
-            Start::Included(start.checked_add(1)?),
-            End::Excluded(end.checked_add(1)?),
-        ),
-        (Excluded(start), Unbounded) => (Start::Included(start.checked_add(1)?), End::Unbounded),
-    })
+impl Start {
+    fn checked(start: Bound<&usize>) -> Option<Self> {
+        Some(match start {
+            Included(start) => Self::Included(*start),
+            Excluded(start) => Self::Included(start.checked_add(1)?),
+            Unbounded => Self::Unbounded,
+        })
+    }
+}
+
+impl End {
+    fn checked(end: Bound<&usize>) -> Option<Self> {
+        Some(match end {
+            Included(end) => Self::Excluded(end.checked_add(1)?),
+            Excluded(end) => Self::Excluded(*end),
+            Unbounded => Self::Unbounded,
+        })
+    }
 }
 
 #[cfg(test)]
