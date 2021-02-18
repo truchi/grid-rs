@@ -11,6 +11,22 @@ pub trait GridItem: WithSize + Sized {
         // SAFETY: index is checked
         Some(unsafe { self.item_unchecked(index) })
     }
+
+    fn crop(self, rect: impl Index2D) -> Option<Crop<Self>> {
+        Crop::new(rect, self)
+    }
+
+    unsafe fn crop_unchecked(self, rect: impl Index2D) -> Crop<Self> {
+        Crop::new_unchecked(rect, self)
+    }
+
+    fn cloned<'a, T>(self) -> Cloned<Self>
+    where
+        Self: GridItem<Item = &'a T>,
+        T: 'a + Clone,
+    {
+        Cloned::new(self)
+    }
 }
 
 pub trait GridCol: GridItem {

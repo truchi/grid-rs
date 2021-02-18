@@ -3,6 +3,12 @@ use std::ops::{Deref, DerefMut};
 
 pub struct Cloned<T>(T);
 
+impl<T> Cloned<T> {
+    pub fn new(grid: T) -> Self {
+        Self(grid)
+    }
+}
+
 impl<T> Deref for Cloned<T> {
     type Target = T;
 
