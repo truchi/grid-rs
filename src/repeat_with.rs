@@ -143,7 +143,7 @@ impl<I, F: FnMut(Point) -> I> GridItem for RepeatWith<F> {
     type Item = I;
 
     unsafe fn item_unchecked(mut self, index: impl Index0D) -> Self::Item {
-        (self.fun)(index.unchecked(self.size))
+        (self.fun)(index.unchecked())
     }
 }
 

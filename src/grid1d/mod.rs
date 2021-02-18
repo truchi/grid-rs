@@ -103,7 +103,7 @@ macro_rules! grid {
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
                 let msize = self.msize();
-                let index = index0d(index.unchecked(msize.into()), msize);
+                let index = index0d(index.unchecked(), msize);
 
                 self.items.$as().$get(index)
             }
