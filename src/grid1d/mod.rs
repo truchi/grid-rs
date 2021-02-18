@@ -79,7 +79,6 @@ macro_rules! grid {
             // Major
             grid!(impl [SLICE] $Type $GridMajor $Major $major AsRef as_ref get_unchecked);
             grid!(impl [SLICE] $Type $GridMajor $Major $major AsMut as_mut get_unchecked_mut (mut));
-            // grid!(impl [CLONED 1D] $Type $GridMajor $Major $major (iter));
 
             // Minor
             grid!(impl [ITER] $Type $M $GridMinor $Minor $minor AsRef Index1D Minor);
