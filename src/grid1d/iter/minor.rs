@@ -11,11 +11,9 @@ pub struct Minor<'a, M, I, T> {
 }
 
 impl<'a, M: Major, I, T: AsRef<[I]>> Minor<'a, M, I, T> {
-    pub unsafe fn new(
-        grid: &'a Grid1D<M, I, T>,
-        (i, Range { start, end }): (usize, Range<usize>),
-    ) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Grid1D<M, I, T>, index: impl Index1D) -> Self {
         let msize = grid.msize();
+        let (i, Range { start, end }) = index.unchecked(msize);
 
         Self {
             items:    grid.as_ref(),

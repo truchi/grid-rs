@@ -10,12 +10,12 @@ pub struct MinorMut<'a, M, I, T> {
 }
 
 impl<'a, M: Major, I, T: AsMut<[I]>> MinorMut<'a, M, I, T> {
-    pub unsafe fn new(
-        grid: &'a mut Grid1D<M, I, T>,
-        (i, Range { start, end }): (usize, Range<usize>),
-    ) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a mut Grid1D<M, I, T>, index: impl Index1D) -> Self {
+        let msize = grid.msize();
+        let (i, Range { start, end }) = index.unchecked(msize);
+
         // Splitting to the first col/row of interest
-        let major = grid.msize().major();
+        let major = msize.major();
         let first = start * major;
         let items = grid.as_mut();
         debug_assert!(first <= items.len(), "Index out of bounds");

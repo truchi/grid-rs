@@ -10,7 +10,8 @@ pub struct MajorsMut<'a, M, I, T> {
 }
 
 impl<'a, M: Major, I, T: AsMut<[I]>> MajorsMut<'a, M, I, T> {
-    pub unsafe fn new(grid: &'a mut Grid1D<M, I, T>, index: Point<Range<usize>>) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a mut Grid1D<M, I, T>, index: impl Index2D) -> Self {
+        let index = index.unchecked(grid.size());
         let (range, minor) = major_index2d::<M>(index);
 
         // Splitting to the first col/row of interest

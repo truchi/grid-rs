@@ -82,15 +82,15 @@ macro_rules! grid {
             // grid!(impl [CLONED 1D] $Type $GridMajor $Major $major (iter));
 
             // Minor
-            grid!(impl [ITER] $Type $M $GridMinor $Minor $minor AsRef Index1D msize Minor);
-            grid!(impl [ITER] $Type $M $GridMinor $Minor $minor AsMut Index1D msize MinorMut (mut));
+            grid!(impl [ITER] $Type $M $GridMinor $Minor $minor AsRef Index1D Minor);
+            grid!(impl [ITER] $Type $M $GridMinor $Minor $minor AsMut Index1D MinorMut (mut));
 
             // Majors
-            grid!(impl [ITER] $Type $M $GridMajors $Majors $majors AsRef Index2D size Majors);
-            grid!(impl [ITER] $Type $M $GridMajors $Majors $majors AsMut Index2D size MajorsMut (mut));
+            grid!(impl [ITER] $Type $M $GridMajors $Majors $majors AsRef Index2D Majors);
+            grid!(impl [ITER] $Type $M $GridMajors $Majors $majors AsMut Index2D MajorsMut (mut));
 
             // Minors
-            grid!(impl [ITER] $Type $M $GridMinors $Minors $minors AsRef Index2D size Minors);
+            grid!(impl [ITER] $Type $M $GridMinors $Minors $minors AsRef Index2D Minors);
 
             // Items
             grid!(impl [ITEMS] $Type $GridMajors $Majors $majors AsRef);
@@ -125,7 +125,7 @@ macro_rules! grid {
         $Type:ident $M:ident
         $Trait:ident $Assoc:ident $fn:ident
         $As:ident
-        $Index:ident $size:ident
+        $Index:ident
         $Iter:ident
         $(($mut:ident))?
     ) => {
@@ -133,7 +133,7 @@ macro_rules! grid {
             type $Assoc = iter::$Iter<'a, $M, I, T>;
 
             unsafe fn $fn(self, index: impl $Index) -> Self::$Assoc {
-                Self::$Assoc::new(self, index.unchecked(self.$size()))
+                Self::$Assoc::new_unchecked(self, index)
             }
         }
     };

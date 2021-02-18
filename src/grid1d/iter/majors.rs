@@ -6,8 +6,10 @@ pub struct Majors<'a, M, I, T> {
     index: Point<Range<usize>>,
 }
 
-impl<'a, M, I, T> Majors<'a, M, I, T> {
-    pub unsafe fn new(grid: &'a Grid1D<M, I, T>, index: Point<Range<usize>>) -> Self {
+impl<'a, M: Major, I, T> Majors<'a, M, I, T> {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Grid1D<M, I, T>, index: impl Index2D) -> Self {
+        let index = index.unchecked(grid.size());
+
         Self { grid, index }
     }
 }
