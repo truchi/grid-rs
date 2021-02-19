@@ -139,7 +139,7 @@ impl<I, F: FnMut(Point) -> I> Iterator for Items<F> {
 
 // ================= //
 
-impl<I, F: FnMut(Point) -> I> GridItem for RepeatWith<F> {
+impl<I, F: FnMut(Point) -> I> Grid for RepeatWith<F> {
     type Item = I;
 
     unsafe fn item_unchecked(mut self, index: impl Index0D) -> Self::Item {

@@ -1,6 +1,6 @@
 use crate::*;
 
-pub trait GridItem: WithSize + Sized {
+pub trait Grid: WithSize + Sized {
     type Item;
 
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item;
@@ -22,14 +22,14 @@ pub trait GridItem: WithSize + Sized {
 
     fn cloned<'a, T>(self) -> Cloned<Self>
     where
-        Self: GridItem<Item = &'a T>,
+        Self: Grid<Item = &'a T>,
         T: 'a + Clone,
     {
         Cloned::new(self)
     }
 }
 
-pub trait GridCol: GridItem {
+pub trait GridCol: Grid {
     type Col: IntoIterator<Item = Self::Item>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col;
@@ -42,7 +42,7 @@ pub trait GridCol: GridItem {
     }
 }
 
-pub trait GridRow: GridItem {
+pub trait GridRow: Grid {
     type Row: IntoIterator<Item = Self::Item>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row;
@@ -81,7 +81,7 @@ pub trait GridRows: GridRow {
     }
 }
 
-pub trait GridItems: GridItem {
+pub trait GridItems: Grid {
     type Items: IntoIterator<Item = Self::Item>;
 
     unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;

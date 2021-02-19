@@ -32,7 +32,7 @@ impl<I> WithSize for Crop<I> {
     }
 }
 
-impl<T: GridItem> GridItem for Crop<T> {
+impl<T: Grid> Grid for Crop<T> {
     type Item = T::Item;
 
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {

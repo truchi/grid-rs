@@ -97,7 +97,7 @@ macro_rules! grid {
         )*
     };
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
-        impl<'a, M: Major, I, T: $As<[I]>> GridItem for &'a $($mut)? Grid1D<M, I, T> {
+        impl<'a, M: Major, I, T: $As<[I]>> Grid for &'a $($mut)? Grid1D<M, I, T> {
             type Item = &'a $($mut)? I;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {

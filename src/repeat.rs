@@ -19,7 +19,7 @@ impl<I> WithSize for Repeat<I> {
     }
 }
 
-impl<I> GridItem for Repeat<I> {
+impl<I> Grid for Repeat<I> {
     type Item = I;
 
     unsafe fn item_unchecked(self, _: impl Index0D) -> Self::Item {

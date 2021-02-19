@@ -23,7 +23,7 @@ impl<T> DerefMut for Cloned<T> {
     }
 }
 
-impl<'a, I: 'a + Clone, T: GridItem<Item = &'a I>> GridItem for Cloned<T> {
+impl<'a, I: 'a + Clone, T: Grid<Item = &'a I>> Grid for Cloned<T> {
     type Item = I;
 
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
