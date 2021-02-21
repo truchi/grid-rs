@@ -48,7 +48,7 @@ impl<T: GridCol> GridCol for Crop<T> {
     type Col = T::Col;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
-        let mut index = index.unchecked(ColMajor::from(self.size()));
+        let mut index = index.col_unchecked(self.size());
         index.0 += self.rect.x.start;
         index.1.start += self.rect.y.start;
 
@@ -60,7 +60,7 @@ impl<T: GridRow> GridRow for Crop<T> {
     type Row = T::Row;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
-        let mut index = index.unchecked(RowMajor::from(self.size()));
+        let mut index = index.row_unchecked(self.size());
         index.0 += self.rect.y.start;
         index.1.start += self.rect.x.start;
 

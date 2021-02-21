@@ -31,7 +31,7 @@ impl<I: Clone> GridRow for Repeat<I> {
     type Row = std::iter::Take<std::iter::Repeat<I>>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
-        let (_, Range { start, end }) = index.unchecked(RowMajor::from(self.size));
+        let (_, Range { start, end }) = index.row_unchecked(self.size);
 
         repeat(self.item).take(end - start)
     }
@@ -41,7 +41,7 @@ impl<I: Clone> GridCol for Repeat<I> {
     type Col = std::iter::Take<std::iter::Repeat<I>>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
-        let (_, Range { start, end }) = index.unchecked(ColMajor::from(self.size));
+        let (_, Range { start, end }) = index.col_unchecked(self.size);
 
         repeat(self.item).take(end - start)
     }

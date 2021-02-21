@@ -62,7 +62,7 @@ impl<T: Into<Point>> Index0D for T {
 ///
 /// Both `usize` (implied `RangeFull`) and `(usize, T: RangeBounds<usize>)` are
 /// `Index1D`s.
-pub trait Index1D {
+pub trait Index1D: Sized {
     /// Returns the index as `(usize, Range<usize>)`, without bounds checking.
     ///
     /// ### Examples
@@ -70,46 +70,62 @@ pub trait Index1D {
     /// ```
     /// // TODO
     /// ```
-    fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>);
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>);
 
     /// Returns the index as `(usize, Range<usize>)`, or `None` if out of
     /// `size`.
     ///
     /// When `Some`, guaranties:
-    /// - `usize < size.minor()`
+    /// - `usize < max_i`
     /// - `range.start <= range.end`
-    /// - `range.end <= size.major()`
-    /// - (`range.end <= usize::MAX`)
-    fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)>;
+    /// - `range.end <= end`
+    /// - (`range.end <= usize::MAX`, saturates)
+    fn checked(self, max_i: usize, max_end: usize) -> Option<(usize, Range<usize>)>;
+
+    fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
+        self.unchecked(size.y)
+    }
+
+    fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
+        self.checked(size.x, size.y)
+    }
+
+    fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
+        self.unchecked(size.x)
+    }
+
+    fn row(self, size: Size) -> Option<(usize, Range<usize>)> {
+        self.checked(size.y, size.x)
+    }
 }
 
 impl Index1D for usize {
-    fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)> {
-        if self < size.minor() {
-            Some(self.unchecked(size))
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+        (self, 0..max_end)
+    }
+
+    fn checked(self, max_i: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
+        if self < max_i {
+            Some(self.unchecked(max_end))
         } else {
             None
         }
-    }
-
-    fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>) {
-        (self, 0..size.major())
     }
 }
 
 impl<T: RangeBounds<usize>> Index1D for (usize, T) {
-    fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)> {
+    fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+        (self.0, ToRange::unchecked(self.1, max_end))
+    }
+
+    fn checked(self, max_i: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
         let (i, range) = self;
 
-        if i < size.minor() {
-            Some((i, ToRange::checked(range, size.major())?))
+        if i < max_i {
+            Some((i, ToRange::checked(range, max_end)?))
         } else {
             None
         }
-    }
-
-    fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>) {
-        (self.0, ToRange::unchecked(self.1, size.major()))
     }
 }
 

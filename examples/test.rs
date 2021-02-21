@@ -124,6 +124,7 @@ fn main() {
             "({})",
             unsafe { (&mut flat).col_unchecked(col) }
                 .map(|c| *c)
+                .iter()
                 .collect::<String>()
         );
     }

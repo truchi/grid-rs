@@ -35,7 +35,7 @@ pub trait GridCol: Grid {
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col;
 
     fn col(self, index: impl Index1D) -> Option<Self::Col> {
-        let index = index.checked(ColMajor::from(self.size()))?;
+        let index = index.col(self.size())?;
 
         // SAFETY: index is checked
         Some(unsafe { self.col_unchecked(index) })
@@ -48,7 +48,7 @@ pub trait GridRow: Grid {
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row;
 
     fn row(self, index: impl Index1D) -> Option<Self::Row> {
-        let index = index.checked(RowMajor::from(self.size()))?;
+        let index = index.row(self.size())?;
 
         // SAFETY: index is checked
         Some(unsafe { self.row_unchecked(index) })

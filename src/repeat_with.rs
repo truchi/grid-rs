@@ -151,7 +151,7 @@ impl<I, F: FnMut(Point) -> I> GridRow for RepeatWith<F> {
     type Row = Iter1D<RowMajor, F>;
 
     unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
-        Self::Row::new(self.fun, index.unchecked(RowMajor::from(self.size)))
+        Self::Row::new(self.fun, index.row_unchecked(self.size))
     }
 }
 
@@ -159,7 +159,7 @@ impl<I, F: FnMut(Point) -> I> GridCol for RepeatWith<F> {
     type Col = Iter1D<ColMajor, F>;
 
     unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
-        Self::Col::new(self.fun, index.unchecked(ColMajor::from(self.size)))
+        Self::Col::new(self.fun, index.col_unchecked(self.size))
     }
 }
 
