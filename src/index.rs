@@ -1,27 +1,85 @@
 use crate::*;
 use std::ops::{Range, RangeBounds};
 
+/// Indexes for [`Grid::item`](Grid::item).
+///
+/// The underlying type to index an item is [`Point`](Point).
+///
+/// Anything that `Into<Point>` is an `Index0D`.
 pub trait Index0D {
+    /// Returns the index as a [`Point`](Point), without bounds checking.
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// # use grid::*;
+    /// assert!((0, 0).unchecked() == Point { x: 0, y: 0 });
+    /// ```
     fn unchecked(self) -> Point;
+
+    /// Returns the index as a [`Point`](Point), or `None` if out of
+    /// `size`.
+    ///
+    /// When `Some`, guaranties:
+    /// - `point.x < size.x`
+    /// - `point.y < size.y`
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// # use grid::*;
+    /// let size = Size { x: 5, y: 5 };
+    ///
+    /// assert!((0, 0).checked(size) == Some(Point { x: 0, y: 0 }));
+    /// assert!((4, 4).checked(size) == Some(Point { x: 4, y: 4 }));
+    /// assert!((1, 5).checked(size) == None);
+    /// ```
     fn checked(self, size: Size) -> Option<Point>;
 }
 
-impl Index0D for Point {
+impl<T: Into<Point>> Index0D for T {
     fn unchecked(self) -> Point {
-        self
+        self.into()
     }
 
     fn checked(self, size: Size) -> Option<Point> {
-        if self < size.into() {
-            Some(self)
+        let point = self.into();
+
+        if point < size {
+            Some(point)
         } else {
             None
         }
     }
 }
 
-pub trait Index1D: Sized {
+/// Indexes for [`GridCol::col`](GridCol::col) /
+/// [`GridRow::row`](GridRow::row).
+///
+/// The underlying type to index a column/row is `(usize, Range<usize>)`, with:
+/// - `usize`: the index of the column/row,
+/// - `Range<usize>`: the range in that column/row.
+///
+/// Both `usize` (implied `RangeFull`) and `(usize, T: RangeBounds<usize>)` are
+/// `Index1D`s.
+pub trait Index1D {
+    /// Returns the index as `(usize, Range<usize>)`, without bounds checking.
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// // TODO
+    /// ```
     fn unchecked<M: Major>(self, size: M) -> (usize, Range<usize>);
+
+    /// Returns the index as `(usize, Range<usize>)`, or `None` if out of
+    /// `size`.
+    ///
+    /// When `Some`, guaranties:
+    /// - `usize < size.minor()`
+    /// - `range.start <= range.end`
+    /// - `range.end <= size.major()`
+    /// - (`range.end <= usize::MAX`)
     fn checked<M: Major>(self, size: M) -> Option<(usize, Range<usize>)>;
 }
 
@@ -55,7 +113,9 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
     }
 }
 
-/// Indexing into a rectangle inside a grid, with optional cropping.
+/// Indexes for [`GridCols::cols`](GridCols::cols) /
+/// [`GridRows::rows`](GridRows::rows) /
+/// [`GridItems::items`](GridItems::items).
 pub trait Index2D {
     /// Returns the index **with** bounds checking.
     fn checked(self, size: Size) -> Option<Point<Range<usize>>>;
