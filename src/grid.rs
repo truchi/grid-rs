@@ -97,7 +97,7 @@ macro_rules! grid2d {
 }
 
 grid1d!(
-    /// Provides a [`GridCol::col`](GridCol::col) 1D iterator.
+    /// Provides a [`Col`](GridCol::Col) 1D [`IntoIterator`](std::iter::IntoIterator).
     GridCol Col
         /// Returns the column at `index`, without bounds checking.
         ///
@@ -109,7 +109,7 @@ grid1d!(
         /// Returns the column at `index`, or [`None`](std::option::Option::None) if
         /// out of bounds.
         col
-    /// Provides a [`GridRow::row`](GridRow::row) 1D iterator.
+    /// Provides a [`Row`](GridRow::Row) 1D [`IntoIterator`](std::iter::IntoIterator).
     GridRow Row
         /// Returns the row at `index`, without bounds checking.
         ///
@@ -124,7 +124,7 @@ grid1d!(
 );
 
 grid2d!(
-    /// Provides a [`GridCols::cols`](GridCols::cols) 2D iterator.
+    /// Provides a [`Cols`](GridCols::Cols) 2D [`IntoIterator`](std::iter::IntoIterator).
     GridCols Cols (GridCol Col)
         /// Returns the columns at `index`, without bounds checking.
         ///
@@ -136,7 +136,7 @@ grid2d!(
         /// Returns the columns at `index`, or [`None`](std::option::Option::None) if
         /// out of bounds.
         cols
-    /// Provides a [`GridRows::rows`](GridRows::rows) 2D iterator.
+    /// Provides a [`Rows`](GridRows::Rows) 2D [`IntoIterator`](std::iter::IntoIterator).
     GridRows Rows (GridRow Row)
         /// Returns the rows at `index`, without bounds checking.
         ///
@@ -148,7 +148,7 @@ grid2d!(
         /// Returns the rows at `index`, or [`None`](std::option::Option::None) if
         /// out of bounds.
         rows
-    /// Provides a [`GridItems::items`](GridRows::items) 2D iterator.
+    /// Provides an [`Items`](GridItems::Items) 2D [`IntoIterator`](std::iter::IntoIterator).
     GridItems Items (Grid Item)
         /// Returns the items at `index`, without bounds checking.
         ///
