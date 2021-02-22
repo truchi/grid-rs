@@ -1,9 +1,6 @@
 // #![warn(missing_docs)]
 // #![allow(unused)]
 
-#[macro_use]
-mod utils;
-
 mod cloned;
 mod cropped;
 mod grid;
@@ -12,6 +9,7 @@ mod index;
 mod major;
 pub mod repeat;
 pub mod repeat_with;
+mod utils;
 mod with_msize;
 mod with_size;
 
