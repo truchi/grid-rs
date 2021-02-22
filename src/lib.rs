@@ -10,16 +10,17 @@ mod grid;
 pub mod grid1d;
 mod index;
 mod major;
-mod repeat;
-mod repeat_with;
+pub mod repeat;
+pub mod repeat_with;
 
 pub use self::grid::*;
 pub use cloned::*;
 pub use crop::*;
+pub use grid1d::{ColGrid1D, Grid1D, RowGrid1D};
 pub use index::*;
 pub use major::*;
-pub use repeat::*;
-pub use repeat_with::*;
+pub use repeat::Repeat;
+pub use repeat_with::RepeatWith;
 pub use utils::*;
 
 pub trait WithSize {
