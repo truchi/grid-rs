@@ -1,10 +1,23 @@
 use crate::*;
 
+/// Base trait for dealing with grids.
+///
+/// Grids can yield their [`Item`](Grid::Item)s given a [`Index0D`](Index0D)
+/// ([`Point`](Point)).
 pub trait Grid: WithSize + Sized {
+    /// The type of the grid's items.
     type Item;
 
+    /// Returns the item at `index`, without bounds checking.
+    ///
+    /// ### Safety
+    ///
+    /// Calling this method with an out-of-bounds `index` is *undefined
+    /// behavior*.
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item;
 
+    /// Returns the item at `index`, or [`None`](std::option::Option::None) if
+    /// out of bounds.
     fn item(self, index: impl Index0D) -> Option<Self::Item> {
         let index = index.checked(self.size())?;
 
@@ -69,10 +82,10 @@ macro_rules! grid2d {
         pub trait $Trait: $Parent {
             type $Assoc: IntoIterator<Item = Self::$Item>;
 
-            $(#[$unchecked_meta:meta])*
+            $(#[$unchecked_meta])*
             unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc;
 
-            $(#[$checked_meta:meta])*
+            $(#[$checked_meta])*
             fn $checked(self, index: impl Index2D) -> Option<Self::$Assoc> {
                 let index = index.checked(self.size())?;
 
@@ -84,12 +97,67 @@ macro_rules! grid2d {
 }
 
 grid1d!(
-    GridCol Col col_unchecked col
-    GridRow Row row_unchecked row
+    /// Provides a [`GridCol::col`](GridCol::col) 1D iterator.
+    GridCol Col
+        /// Returns the column at `index`, without bounds checking.
+        ///
+        /// ### Safety
+        ///
+        /// Calling this method with an out-of-bounds `index` is *undefined
+        /// behavior*.
+        col_unchecked
+        /// Returns the column at `index`, or [`None`](std::option::Option::None) if
+        /// out of bounds.
+        col
+    /// Provides a [`GridRow::row`](GridRow::row) 1D iterator.
+    GridRow Row
+        /// Returns the row at `index`, without bounds checking.
+        ///
+        /// ### Safety
+        ///
+        /// Calling this method with an out-of-bounds `index` is *undefined
+        /// behavior*.
+        row_unchecked
+        /// Returns the row at `index`, or [`None`](std::option::Option::None) if
+        /// out of bounds.
+        row
 );
 
 grid2d!(
-    GridCols Cols (GridCol Col) cols_unchecked cols
-    GridRows Rows (GridRow Row) rows_unchecked rows
-    GridItems Items (Grid Item) items_unchecked items
+    /// Provides a [`GridCols::cols`](GridCols::cols) 2D iterator.
+    GridCols Cols (GridCol Col)
+        /// Returns the columns at `index`, without bounds checking.
+        ///
+        /// ### Safety
+        ///
+        /// Calling this method with an out-of-bounds `index` is *undefined
+        /// behavior*.
+        cols_unchecked
+        /// Returns the columns at `index`, or [`None`](std::option::Option::None) if
+        /// out of bounds.
+        cols
+    /// Provides a [`GridRows::rows`](GridRows::rows) 2D iterator.
+    GridRows Rows (GridRow Row)
+        /// Returns the rows at `index`, without bounds checking.
+        ///
+        /// ### Safety
+        ///
+        /// Calling this method with an out-of-bounds `index` is *undefined
+        /// behavior*.
+        rows_unchecked
+        /// Returns the rows at `index`, or [`None`](std::option::Option::None) if
+        /// out of bounds.
+        rows
+    /// Provides a [`GridItems::items`](GridRows::items) 2D iterator.
+    GridItems Items (Grid Item)
+        /// Returns the items at `index`, without bounds checking.
+        ///
+        /// ### Safety
+        ///
+        /// Calling this method with an out-of-bounds `index` is *undefined
+        /// behavior*.
+        items_unchecked
+        /// Returns the items at `index`, or [`None`](std::option::Option::None) if
+        /// out of bounds.
+        items
 );
