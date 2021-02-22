@@ -25,20 +25,36 @@ pub trait Grid: WithSize + Sized {
         Some(unsafe { self.item_unchecked(index) })
     }
 
+    /// Creates a grid which copies all of its elements.
+    ///
+    /// This is useful when you have an iterator over `&T`, but you need an
+    /// iterator over `T`.
+    fn copied<'a, T>(self) -> Copied<Self>
+    where
+        Self: Grid<Item = &'a T>,
+        T: 'a + Copy,
+    {
+        Copied(self)
+    }
+
+    /// Creates a grid which clones all of its elements.
+    ///
+    /// This is useful when you have an iterator over `&T`, but you need an
+    /// iterator over `T`.
+    fn cloned<'a, T>(self) -> Cloned<Self>
+    where
+        Self: Grid<Item = &'a T>,
+        T: 'a + Clone,
+    {
+        Cloned(self)
+    }
+
     fn crop(self, rect: impl Index2D) -> Option<Crop<Self>> {
         Crop::new(rect, self)
     }
 
     unsafe fn crop_unchecked(self, rect: impl Index2D) -> Crop<Self> {
         Crop::new_unchecked(rect, self)
-    }
-
-    fn cloned<'a, T>(self) -> Cloned<Self>
-    where
-        Self: Grid<Item = &'a T>,
-        T: 'a + Clone,
-    {
-        Cloned::new(self)
     }
 }
 
