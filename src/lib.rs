@@ -1,4 +1,5 @@
-// #![warn(missing_docs)] // TODO
+// TODO: tests, docs, examples
+// #![warn(missing_docs)]
 
 pub mod grid1d;
 pub mod repeat;

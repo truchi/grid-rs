@@ -55,25 +55,25 @@ fn main() {
 
     // ROWS
     print!("\nROWS    : ");
-    for row in flat.rows(()).unwrap() {
+    for row in flat.rows(..).unwrap() {
         print!("({})", row.iter().collect::<String>());
     }
     print!("\nROWS MUT: ");
-    for row in (&mut flat).rows(()).unwrap() {
+    for row in (&mut flat).rows(..).unwrap() {
         print!("({})", row.iter().collect::<String>());
     }
 
     // COLS
     print!("\nCOLS    : ");
-    for col in flat.cols(()).unwrap() {
+    for col in flat.cols(..).unwrap() {
         print!("({})", col.collect::<String>());
     }
     print!("\nCOLS MUT: ");
-    for col in (&mut flat).cols(()).unwrap() {
+    for col in (&mut flat).cols(..).unwrap() {
         print!("({})", col.collect::<String>());
     }
 
-    println!("=======================");
+    println!("\n=======================");
 
     // ITEM
     print!("ITEM    : ");
@@ -123,28 +123,27 @@ fn main() {
             "({})",
             unsafe { (&mut flat).col_unchecked(col) }
                 .map(|c| *c)
-                .iter()
                 .collect::<String>()
         );
     }
 
     // ROWS
     print!("\nROWS    : ");
-    for row in flat.rows(()).unwrap() {
+    for row in flat.rows(..).unwrap() {
         print!("({})", row.iter().collect::<String>());
     }
     print!("\nROWS MUT: ");
-    for row in (&mut flat).rows(()).unwrap() {
+    for row in (&mut flat).rows(..).unwrap() {
         print!("({})", row.iter().collect::<String>());
     }
 
     // COLS
     print!("\nCOLS    : ");
-    for col in flat.cols(()).unwrap() {
+    for col in flat.cols(..).unwrap() {
         print!("({})", col.collect::<String>());
     }
     print!("\nCOLS MUT: ");
-    for col in (&mut flat).cols(()).unwrap() {
+    for col in (&mut flat).cols(..).unwrap() {
         print!("({})", col.collect::<String>());
     }
 
