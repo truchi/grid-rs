@@ -16,7 +16,7 @@ pub fn index1d<M: Major>(
     start..start + end
 }
 
-pub fn major_index2d<M: Major>(index: Point<Range<usize>>) -> (Range<usize>, Range<usize>) {
+pub fn major_index2d<M: Major>(index: Rect) -> (Range<usize>, Range<usize>) {
     let start = M::from(Point {
         x: index.x.start,
         y: index.y.start,

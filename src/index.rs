@@ -191,48 +191,48 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
 /// [`GridRows::rows`](GridRows::rows) /
 /// [`GridItems::items`](GridItems::items).
 pub trait Index2D {
-    /// Returns the index **with** bounds checking.
-    fn checked(self, size: Size) -> Option<Point<Range<usize>>>;
-
     /// Returns the index **without** bounds checking.
-    fn unchecked(self, size: Size) -> Point<Range<usize>>;
+    fn unchecked(self, size: Size) -> Rect;
+
+    /// Returns the index **with** bounds checking.
+    fn checked(self, size: Size) -> Option<Rect>;
 }
 
 impl Index2D for () {
-    fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
-        Some(self.unchecked(size))
-    }
-
-    fn unchecked(self, size: Size) -> Point<Range<usize>> {
+    fn unchecked(self, size: Size) -> Rect {
         Point {
             x: 0..size.x,
             y: 0..size.y,
         }
     }
+
+    fn checked(self, size: Size) -> Option<Rect> {
+        Some(self.unchecked(size))
+    }
 }
 
-impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for Point<X, Y> {
-    fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
-        (self.x, self.y).checked(size)
+impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for Coord<X, Y> {
+    fn unchecked(self, size: Size) -> Rect {
+        (self.x, self.y).unchecked(size)
     }
 
-    fn unchecked(self, size: Size) -> Point<Range<usize>> {
-        (self.x, self.y).unchecked(size)
+    fn checked(self, size: Size) -> Option<Rect> {
+        (self.x, self.y).checked(size)
     }
 }
 
 impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for (X, Y) {
-    fn checked(self, size: Size) -> Option<Point<Range<usize>>> {
-        Some(Point {
-            x: ToRange::checked(self.0, size.x)?,
-            y: ToRange::checked(self.1, size.y)?,
-        })
-    }
-
-    fn unchecked(self, size: Size) -> Point<Range<usize>> {
+    fn unchecked(self, size: Size) -> Rect {
         Point {
             x: ToRange::unchecked(self.0, size.x),
             y: ToRange::unchecked(self.1, size.y),
         }
+    }
+
+    fn checked(self, size: Size) -> Option<Rect> {
+        Some(Point {
+            x: ToRange::checked(self.0, size.x)?,
+            y: ToRange::checked(self.1, size.y)?,
+        })
     }
 }

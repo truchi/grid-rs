@@ -1,9 +1,8 @@
 use crate::*;
-use std::ops::Range;
 
 #[allow(dead_code)]
 pub struct Crop<T> {
-    rect: Size<Range<usize>>,
+    rect: Rect,
     grid: T,
 }
 

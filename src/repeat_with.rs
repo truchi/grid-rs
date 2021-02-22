@@ -47,12 +47,12 @@ impl<M: Major, I, F: FnMut(Point) -> I> Iterator for Iter1D<M, F> {
 
 pub struct Iter2D<M, F> {
     fun:      F,
-    index:    Point<Range<usize>>,
+    index:    Rect,
     _phantom: PhantomData<M>,
 }
 
 impl<M, F> Iter2D<M, F> {
-    pub fn new(fun: F, index: Point<Range<usize>>) -> Self {
+    pub fn new(fun: F, index: Rect) -> Self {
         Self {
             fun,
             index,
@@ -93,7 +93,7 @@ pub struct Items<F> {
 }
 
 impl<F> Items<F> {
-    pub fn new(fun: F, index: Point<Range<usize>>) -> Self {
+    pub fn new(fun: F, index: Rect) -> Self {
         let Point {
             x: Range {
                 start: x,

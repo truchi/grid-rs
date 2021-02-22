@@ -1,9 +1,8 @@
 use super::*;
-use std::ops::Range;
 
 pub struct Minors<'a, M, I, T> {
     grid:  &'a Grid1D<M, I, T>,
-    index: Point<Range<usize>>,
+    index: Rect,
 }
 
 impl<'a, M: Major, I, T> Minors<'a, M, I, T> {

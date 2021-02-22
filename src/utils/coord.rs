@@ -1,7 +1,8 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, ops::Range};
 
 pub type Point<X = usize, Y = X> = Coord<X, Y>;
 pub type Size<X = usize, Y = X> = Coord<X, Y>;
+pub type Rect = Coord<Range<usize>>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub struct Coord<X = usize, Y = X> {
