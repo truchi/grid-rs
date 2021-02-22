@@ -8,9 +8,9 @@ use std::ops::RangeBounds;
 /// The underlying type to index columns/rows/items is [`Rect`](Rect)
 /// (`Coord<Range<usize>>`).
 ///
-/// [`RangeFull`](std::ops::RangeFull), `Coord<X: RangeBounds<usize>, Y:
-/// RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y: RangeBounds<usize>)`
-/// are [`Index2D`](Index2D)s.
+/// [`RangeFull`](std::ops::RangeFull) (implied on both axis), `Coord<X:
+/// RangeBounds<usize>, Y: RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y:
+/// RangeBounds<usize>)` are [`Index2D`](Index2D)s.
 pub trait Index2D {
     /// Returns the index as a [`Rect`](Rect), without bounds checking.
     ///
