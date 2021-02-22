@@ -1,12 +1,20 @@
 use std::{cmp::Ordering, ops::Range};
 
+/// Alias of [`Coord<X, Y>`](Coord).
 pub type Point<X = usize, Y = X> = Coord<X, Y>;
+
+/// Alias of [`Coord<X, Y>`](Coord).
 pub type Size<X = usize, Y = X> = Coord<X, Y>;
+
+/// Alias of `Coord<Range<usize>>`.
 pub type Rect = Coord<Range<usize>>;
 
-#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+/// An x/y pair.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Coord<X = usize, Y = X> {
+    /// The x axis value.
     pub x: X,
+    /// The y axis value.
     pub y: Y,
 }
 
