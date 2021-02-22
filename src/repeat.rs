@@ -33,12 +33,12 @@ impl<I: Clone> Grid for Repeat<I> {
 }
 
 macro_rules! grid1d {
-    ($($Trait:ident $Assoc:ident $unchecked:ident)*) => { $(
+    ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<I: Clone> $Trait for Repeat<I> {
             type $Assoc = Take<StdRepeat<I>>;
 
-            unsafe fn $unchecked(self, index: impl Index1D) -> Self::$Assoc {
-                let (_, Range { start, end }) = index.$unchecked(self.size);
+            unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
+                let (_, Range { start, end }) = index.$fn(self.size);
 
                 std_repeat(self.item).take(end - start)
             }
@@ -48,17 +48,17 @@ macro_rules! grid1d {
 
 macro_rules! grid2d {
     ($x:ident $y:ident $(
-        $Trait:ident $Assoc:ident $unchecked:ident
-        ($Item:ident $item_unchecked:ident)
+        $Trait:ident $Assoc:ident $fn:ident
+        ($Item:ident $item:ident)
         $main:ident $cross:ident
     )*) => { $(
         impl<I: Clone> $Trait for Repeat<I> {
             type $Assoc = Take<StdRepeat<Self::$Item>>;
 
-            unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc {
+            unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 let Point { $x, $y } = index.unchecked(self.size);
 
-                std_repeat(self.$item_unchecked((0, $main))).take($cross.end - $cross.start)
+                std_repeat(self.$item((0, $main))).take($cross.end - $cross.start)
             }
         }
     )* };

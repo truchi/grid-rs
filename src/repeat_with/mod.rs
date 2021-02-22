@@ -31,23 +31,23 @@ impl<I, F: FnMut(Point) -> I> Grid for RepeatWith<F> {
 }
 
 macro_rules! grid1d {
-    ($($Trait:ident<$M:ident> $Assoc:ident $unchecked:ident)*) => { $(
+    ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
         impl<I, F: FnMut(Point) -> I> $Trait for RepeatWith<F> {
             type $Assoc = iter::Iter1D<$M, F>;
 
-            unsafe fn $unchecked(self, index: impl Index1D) -> Self::$Assoc {
-                Self::$Assoc::new(self.fun, index.$unchecked(self.size))
+            unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
+                Self::$Assoc::new(self.fun, index.$fn(self.size))
             }
         }
     )* };
 }
 
 macro_rules! grid2d {
-    ($($Trait:ident<$M:ident> $Assoc:ident $unchecked:ident)*) => { $(
+    ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
         impl<I, F: Clone + Fn(Point) -> I> $Trait for RepeatWith<F> {
             type $Assoc = iter::Iter2D<$M, F>;
 
-            unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc {
+            unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 Self::$Assoc::new(self.fun, index.unchecked(self.size))
             }
         }

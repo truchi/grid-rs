@@ -5,25 +5,25 @@ use std::{
 };
 
 macro_rules! grid1d {
-    ($Type:ident: $Clone:ident ($Std:ident $cloned:ident) $($Trait:ident $Assoc:ident $unchecked:ident)*) => { $(
+    ($Type:ident: $Clone:ident ($Std:ident $cloned:ident) $($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<'a, I: 'a + $Clone, T: $Trait<Item = &'a I>> $Trait for $Type<T> {
             type $Assoc = $Std<<T::$Assoc as IntoIterator>::IntoIter>;
 
-            unsafe fn $unchecked(self, index: impl Index1D) -> Self::$Assoc {
-                self.0.$unchecked(index).into_iter().$cloned()
+            unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
+                self.0.$fn(index).into_iter().$cloned()
             }
         }
     )* };
 }
 
 macro_rules! grid2d {
-    ($Type:ident: $Clone:ident ($cloned:ident) $($Trait:ident $Assoc:ident $Item:ident $unchecked:ident)*) => { $(
+    ($Type:ident: $Clone:ident ($cloned:ident) $($Trait:ident $Assoc:ident $Item:ident $fn:ident)*) => { $(
         impl<'a, I: 'a + $Clone, T: $Trait<Item = &'a I>> $Trait for $Type<T> {
             type $Assoc = Map<<T::$Assoc as IntoIterator>::IntoIter, fn(T::$Item) -> Self::$Item>;
 
-            unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc {
+            unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 self.0
-                    .$unchecked(index)
+                    .$fn(index)
                     .into_iter()
                     .map(|item| item.into_iter().$cloned())
             }

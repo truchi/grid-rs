@@ -46,32 +46,32 @@ impl<T: Grid> Grid for Cropped<T> {
 }
 
 macro_rules! grid1d {
-    ($($Trait:ident $Assoc:ident $unchecked:ident $i:ident $range:ident)*) => { $(
+    ($($Trait:ident $Assoc:ident $fn:ident $i:ident $range:ident)*) => { $(
         impl<T: $Trait> $Trait for Cropped<T> {
             type $Assoc = T::$Assoc;
 
-            unsafe fn $unchecked(self, index: impl Index1D) -> Self::$Assoc {
-                let mut index = index.$unchecked(self.size());
+            unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
+                let mut index = index.$fn(self.size());
                 index.0 += self.rect.$i.start;
                 index.1.start += self.rect.$range.start;
 
-                self.grid.$unchecked(index)
+                self.grid.$fn(index)
             }
         }
     )* };
 }
 
 macro_rules! grid2d {
-    ($($Trait:ident $Assoc:ident $unchecked:ident)*) => { $(
+    ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<T: $Trait> $Trait for Cropped<T> {
             type $Assoc = T::$Assoc;
 
-            unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc {
+            unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 let mut index = index.unchecked(self.size());
                 index.x.start += self.rect.x.start;
                 index.y.start += self.rect.y.start;
 
-                self.grid.$unchecked(index)
+                self.grid.$fn(index)
             }
         }
     )* };
