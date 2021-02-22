@@ -21,7 +21,7 @@ pub use cropped::*;
 pub use grid1d::{ColGrid1D, Grid1D, RowGrid1D};
 pub use index::*;
 pub use major::*;
-pub use repeat::Repeat;
+pub use repeat::{repeat, Repeat};
 pub use repeat_with::RepeatWith;
 pub use utils::*;
 pub(crate) use with_msize::*;
