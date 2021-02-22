@@ -29,67 +29,67 @@ pub trait Grid: WithSize + Sized {
     }
 }
 
-pub trait GridCol: Grid {
-    type Col: IntoIterator<Item = Self::Item>;
+macro_rules! grid1d {
+    ($(
+        $(#[$meta:meta])*
+        $Trait:ident $Assoc:ident
+        $(#[$unchecked_meta:meta])*
+        $unchecked:ident
+        $(#[$checked_meta:meta])*
+        $checked:ident
+    )*) => { $(
+        $(#[$meta])*
+        pub trait $Trait: Grid {
+            type $Assoc: IntoIterator<Item = Self::Item>;
 
-    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col;
+            $(#[$unchecked_meta])*
+            unsafe fn $unchecked(self, index: impl Index1D) -> Self::$Assoc;
 
-    fn col(self, index: impl Index1D) -> Option<Self::Col> {
-        let index = index.col(self.size())?;
+            $(#[$checked_meta])*
+            fn $checked(self, index: impl Index1D) -> Option<Self::$Assoc> {
+                let index = index.$checked(self.size())?;
 
-        // SAFETY: index is checked
-        Some(unsafe { self.col_unchecked(index) })
-    }
+                // SAFETY: index is checked
+                Some(unsafe { self.$unchecked(index) })
+            }
+        }
+    )* };
 }
 
-pub trait GridRow: Grid {
-    type Row: IntoIterator<Item = Self::Item>;
+macro_rules! grid2d {
+    ($(
+        $(#[$meta:meta])*
+        $Trait:ident $Assoc:ident ($Parent:ident $Item:ident)
+        $(#[$unchecked_meta:meta])*
+        $unchecked:ident
+        $(#[$checked_meta:meta])*
+        $checked:ident
+    )*) => { $(
+        $(#[$meta])*
+        pub trait $Trait: $Parent {
+            type $Assoc: IntoIterator<Item = Self::$Item>;
 
-    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row;
+            $(#[$unchecked_meta:meta])*
+            unsafe fn $unchecked(self, index: impl Index2D) -> Self::$Assoc;
 
-    fn row(self, index: impl Index1D) -> Option<Self::Row> {
-        let index = index.row(self.size())?;
+            $(#[$checked_meta:meta])*
+            fn $checked(self, index: impl Index2D) -> Option<Self::$Assoc> {
+                let index = index.checked(self.size())?;
 
-        // SAFETY: index is checked
-        Some(unsafe { self.row_unchecked(index) })
-    }
+                // SAFETY: index is checked
+                Some(unsafe { self.$unchecked(index) })
+            }
+        }
+    )* };
 }
 
-pub trait GridCols: GridCol {
-    type Cols: IntoIterator<Item = Self::Col>;
+grid1d!(
+    GridCol Col col_unchecked col
+    GridRow Row row_unchecked row
+);
 
-    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols;
-
-    fn cols(self, index: impl Index2D) -> Option<Self::Cols> {
-        let index = index.checked(self.size())?;
-
-        // SAFETY: index is checked
-        Some(unsafe { self.cols_unchecked(index) })
-    }
-}
-
-pub trait GridRows: GridRow {
-    type Rows: IntoIterator<Item = Self::Row>;
-
-    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows;
-
-    fn rows(self, index: impl Index2D) -> Option<Self::Rows> {
-        let index = index.checked(self.size())?;
-
-        // SAFETY: index is checked
-        Some(unsafe { self.rows_unchecked(index) })
-    }
-}
-
-pub trait GridItems: Grid {
-    type Items: IntoIterator<Item = Self::Item>;
-
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items;
-
-    fn items(self, index: impl Index2D) -> Option<Self::Items> {
-        let index = index.checked(self.size())?;
-
-        // SAFETY: index is checked
-        Some(unsafe { self.items_unchecked(index) })
-    }
-}
+grid2d!(
+    GridCols Cols (GridCol Col) cols_unchecked cols
+    GridRows Rows (GridRow Row) rows_unchecked rows
+    GridItems Items (Grid Item) items_unchecked items
+);
