@@ -8,31 +8,14 @@ use std::ops::{Range, RangeBounds};
 /// Anything that `Into<Point>` is an [`Index0D`](Index0D).
 pub trait Index0D {
     /// Returns the index as a [`Point`](Point), without bounds checking.
-    ///
-    /// ### Examples
-    ///
-    /// ```
-    /// # use grid::*;
-    /// assert!((0, 0).unchecked() == Point { x: 0, y: 0 });
-    /// ```
     fn unchecked(self) -> Point;
 
-    /// Returns the index as a [`Point`](Point), or `None` if out of bounds.
+    /// Returns the index as a [`Point`](Point), or
+    /// [`None`](std::option::Option::None) if out of bounds.
     ///
     /// When `Some`, guaranties:
     /// - `point.x < size.x`
     /// - `point.y < size.y`
-    ///
-    /// ### Examples
-    ///
-    /// ```
-    /// # use grid::*;
-    /// let size = Size { x: 5, y: 5 };
-    ///
-    /// assert!((0, 0).checked(size) == Some(Point { x: 0, y: 0 }));
-    /// assert!((4, 4).checked(size) == Some(Point { x: 4, y: 4 }));
-    /// assert!((1, 5).checked(size) == None);
-    /// ```
     fn checked(self, size: Size) -> Option<Point>;
 }
 
@@ -59,28 +42,19 @@ impl<T: Into<Point>> Index0D for T {
 /// - [`usize`](usize): the index of the column/row,
 /// - [`Range<usize>`](std::ops::Range): the range of items in that column/row.
 ///
-/// Both `usize` (implied [`RangeFull`](std::ops::RangeFull)) and `(usize, T:
+/// `usize` (implied [`RangeFull`](std::ops::RangeFull)) and `(usize, T:
 /// RangeBounds<usize>)` are [`Index1D`](Index1D)s.
 pub trait Index1D: Sized {
     /// Returns the index as `(usize, Range<usize>)`, without bounds checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start bounds will transform
-    /// into `0`. [`Unbounded`](std::ops::Bound::Unbounded) end bounds will
-    /// tranform into `max_end`. [`Excluded`](std::ops::Bound::Excluded) start
-    /// bounds and [`Included`](std::ops::Bound::Included) end bounds may
-    /// overflow.
-    ///
-    /// ### Examples
-    ///
-    /// ```
-    /// # use grid::*;
-    /// assert!(4.unchecked(12) == (4, 0..12));
-    /// assert!((7, 20..30).unchecked(25) == (7, 20..30));
-    /// ```
+    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
+    /// transform into `0`/`max_end`.  
+    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
+    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn unchecked(self, max_end: usize) -> (usize, Range<usize>);
 
-    /// Returns the index as `(usize, Range<usize>)`, or `None` if out of
-    /// bounds.
+    /// Returns the index as `(usize, Range<usize>)`, or
+    /// [`None`](std::option::Option::None) if out of bounds.
     ///
     /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
     /// [`Included`](std::ops::Bound::Included) end bounds saturate.
@@ -94,23 +68,16 @@ pub trait Index1D: Sized {
     /// Returns the column index as `(usize, Range<usize>)`, without bounds
     /// checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start bounds will transform
-    /// into `0`. [`Unbounded`](std::ops::Bound::Unbounded) end bounds will
-    /// tranform into `max_end`. [`Excluded`](std::ops::Bound::Excluded) start
-    /// bounds and [`Included`](std::ops::Bound::Included) end bounds may
-    /// overflow.
-    ///
-    /// ### Examples
-    ///
-    /// ```
-    /// // TODO
-    /// ```
+    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
+    /// transform into `0`/`max_end`.  
+    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
+    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
         self.unchecked(size.y)
     }
 
-    /// Returns the column index as `(usize, Range<usize>)`, or `None` if out of
-    /// bounds.
+    /// Returns the column index as `(usize, Range<usize>)`, or
+    /// [`None`](std::option::Option::None) if out of bounds.
     ///
     /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
     /// [`Included`](std::ops::Bound::Included) end bounds saturate.
@@ -127,23 +94,16 @@ pub trait Index1D: Sized {
     /// Returns the row index as `(usize, Range<usize>)`, without bounds
     /// checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start bounds will transform
-    /// into `0`. [`Unbounded`](std::ops::Bound::Unbounded) end bounds will
-    /// tranform into `max_end`. [`Excluded`](std::ops::Bound::Excluded) start
-    /// bounds and [`Included`](std::ops::Bound::Included) end bounds may
-    /// overflow.
-    ///
-    /// ### Examples
-    ///
-    /// ```
-    /// // TODO
-    /// ```
+    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
+    /// transform into `0`/`max_end`.  
+    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
+    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
         self.unchecked(size.x)
     }
 
-    /// Returns the row index as `(usize, Range<usize>)`, or `None` if out of
-    /// bounds.
+    /// Returns the row index as `(usize, Range<usize>)`, or
+    /// [`None`](std::option::Option::None) if out of bounds.
     ///
     /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
     /// [`Included`](std::ops::Bound::Included) end bounds saturate.
@@ -190,15 +150,35 @@ impl<T: RangeBounds<usize>> Index1D for (usize, T) {
 /// Indexes for [`GridCols::cols`](GridCols::cols) /
 /// [`GridRows::rows`](GridRows::rows) /
 /// [`GridItems::items`](GridItems::items).
+///
+/// The underlying type to index columns/rows/items is [`Rect`](Rect)
+/// (`Coord<Range<usize>>`).
+///
+/// [`RangeFull`](std::ops::RangeFull), `Coord<X: RangeBounds<usize>, Y:
+/// RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y: RangeBounds<usize>)`
+/// are [`Index2D`](Index2D)s.
 pub trait Index2D {
-    /// Returns the index **without** bounds checking.
+    /// Returns the index as a [`Rect`](Rect), without bounds checking.
+    ///
+    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
+    /// transform into `0`/`size`.  
+    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
+    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn unchecked(self, size: Size) -> Rect;
 
-    /// Returns the index **with** bounds checking.
+    /// Returns the index as [`Rect`](Rect), or
+    /// [`None`](std::option::Option::None) if out of bounds.
+    ///
+    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
+    /// [`Included`](std::ops::Bound::Included) end bounds saturate.
+    ///
+    /// When `Some`, guaranties on both axis:
+    /// - `start <= end`
+    /// - `end <= len`
     fn checked(self, size: Size) -> Option<Rect>;
 }
 
-impl Index2D for () {
+impl Index2D for std::ops::RangeFull {
     fn unchecked(self, size: Size) -> Rect {
         Point {
             x: 0..size.x,
@@ -207,7 +187,7 @@ impl Index2D for () {
     }
 
     fn checked(self, size: Size) -> Option<Rect> {
-        Some(self.unchecked(size))
+        Some(Index2D::unchecked(self, size))
     }
 }
 
