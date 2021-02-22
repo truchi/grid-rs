@@ -12,6 +12,7 @@ mod index;
 mod major;
 pub mod repeat;
 pub mod repeat_with;
+mod with_size;
 
 pub use self::grid::*;
 pub use cloned::*;
@@ -22,20 +23,11 @@ pub use major::*;
 pub use repeat::Repeat;
 pub use repeat_with::RepeatWith;
 pub use utils::*;
-
-pub trait WithSize {
-    fn size(&self) -> Size;
-}
+pub use with_size::*;
 
 trait WithMSize<M: Major>: WithSize {
     fn msize(&self) -> M {
         self.size().into()
-    }
-}
-
-impl<T: std::ops::Deref<Target = U>, U: WithSize> WithSize for T {
-    fn size(&self) -> Size {
-        self.deref().size()
     }
 }
 
