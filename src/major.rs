@@ -1,9 +1,10 @@
 use crate::Coord;
 
-/// Encodes memory layout in [`Size`](Size)s types ([`RowMajor`](RowMajor) /
-/// [`ColMajor`](ColMajor)).
+/// Encodes memory layout in [`Size`](crate::Size)s types
+/// ([`RowMajor`](RowMajor) / [`ColMajor`](ColMajor)).
 ///
-/// A `Major` is a [`Size`](Size) which knows its *major* and *minor* axis.
+/// A `Major` is a [`Size`](crate::Size) which knows its *major* and *minor*
+/// axis.
 pub trait Major: Copy + From<Coord> + Into<Coord> {
     /// Returns a new `Self` from the lengths of the major axis `major`
     /// and minor axis `minor`.
@@ -55,13 +56,13 @@ macro_rules! majors {
 }
 
 majors!(
-    /// A [`Size`](Size) for column-major grids.
+    /// A [`Size`](crate::Size) for column-major grids.
     ColMajor (y x)
         /// The size on the x axis.
         x
         /// The size on the y axis.
         y
-    /// A [`Size`](Size) for row-major grids.
+    /// A [`Size`](crate::Size) for row-major grids.
     RowMajor (x y)
         /// The size on the x axis.
         x
